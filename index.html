@@ -1,1080 +1,892 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-stone-100">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Personal Library Catalog & Loan Tracker</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Google Fonts for Editorial / Library Vibe -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
-  
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            paper: {
-              50: '#FAF8F5',
-              100: '#F5F0EB',
-              200: '#E8DFD5',
-              300: '#D6C7B7',
-              800: '#3D342C',
-              900: '#2A231C',
-            },
-            darkBg: {
-              900: '#121316',
-              800: '#1A1C23',
-              700: '#252834',
-              600: '#323646',
-            },
-            burgundy: {
-              700: '#6B2128',
-              800: '#541A20',
-              900: '#3D1217',
-            },
-            amberAccent: '#C87D53',
-            forestGreen: '#2D5A43',
-          },
-          fontFamily: {
-            serif: ['Playfair Display', 'Georgia', 'serif'],
-            display: ['Cinzel', 'serif'],
-            sans: ['Plus Jakarta Sans', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
-
+  <title>Digital Library Catalogue</title>
   <style>
-    /* Custom scrollbar & aesthetic styling */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-alt: #f1f5f9;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --warn-bg: #fef3c7;
+      --warn-text: #92400e;
+      --danger-bg: #fee2e2;
+      --danger-text: #991b1b;
+      --rent-bg: #e0e7ff;
+      --rent-text: #3730a3;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
     }
-    ::-webkit-scrollbar-track {
-      background: #F5F0EB;
+
+    body.dark {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-alt: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --success-bg: #064e3b;
+      --success-text: #a7f3d0;
+      --warn-bg: #78350f;
+      --warn-text: #fde68a;
+      --danger-bg: #7f1d1d;
+      --danger-text: #fecaca;
+      --rent-bg: #312e81;
+      --rent-text: #c7d2fe;
     }
-    .dark ::-webkit-scrollbar-track {
-      background: #121316;
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); transition: background 0.2s, color 0.2s; padding-bottom: 4rem; }
+
+    /* Header */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
     }
-    ::-webkit-scrollbar-thumb {
-      background: #D6C7B7;
-      border-radius: 4px;
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+    .brand h1 { font-size: 1.35rem; font-weight: 700; }
+    .role-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--surface-alt);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
     }
-    .dark ::-webkit-scrollbar-thumb {
-      background: #323646;
+    .role-badge.owner { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .header-actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    button {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
     }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #C87D53;
+    button:hover { background: var(--surface-alt); }
+    button.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    button.primary:hover { background: var(--primary-hover); }
+    button.danger { background: var(--danger-bg); color: var(--danger-text); border-color: transparent; }
+    button.success { background: var(--success-bg); color: var(--success-text); border-color: transparent; }
+
+    .notif-pill {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
-    .book-card {
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+    .badge-count {
+      background: #ef4444;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
     }
-    .book-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px -6px rgba(42, 35, 28, 0.15);
+
+    /* Main Container */
+    main { max-width: 1150px; margin: 1.5rem auto; padding: 0 1.25rem; }
+
+    /* Search & Filter Bar */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
     }
-    .dark .book-card:hover {
-      box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.5);
+    .controls input, .controls select {
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.95rem;
     }
+    .controls input { flex: 1; min-width: 220px; }
+
+    /* Owner Tabs */
+    .owner-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+      display: none;
+    }
+    .owner-panel.active { display: block; }
+    .tabs { display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tab-btn { border: none; background: transparent; padding: 0.45rem 0.85rem; border-radius: 6px; font-weight: 600; color: var(--text-muted); }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Book Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s;
+    }
+    .card:hover { transform: translateY(-2px); }
+    .cover {
+      height: 170px;
+      background: linear-gradient(135deg, #334155, #1e293b);
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      position: relative;
+      background-size: cover;
+      background-position: center;
+    }
+    .cover-overlay {
+      background: rgba(15, 23, 42, 0.65);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      backdrop-filter: blur(2px);
+    }
+    .card-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+    .card-title { font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+    .card-author { font-size: 0.85rem; color: var(--text-muted); }
+    .badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.25rem; }
+    .tag { font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 6px; }
+    .tag.available { background: var(--success-bg); color: var(--success-text); }
+    .tag.borrowed { background: var(--danger-bg); color: var(--danger-text); }
+    .tag.rent { background: var(--rent-bg); color: var(--rent-text); }
+    .tag.free { background: var(--surface-alt); color: var(--text-muted); }
+    .card-footer { padding: 0.85rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.5rem; }
+    .card-footer button { flex: 1; }
+
+    /* Tables / Lists in Owner Panel */
+    .list-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--bg);
+    }
+    .overdue-alert {
+      border-left: 4px solid #ef4444;
+      background: var(--danger-bg);
+      color: var(--danger-text);
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55);
+      display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 460px;
+      padding: 1.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .modal p.sub { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .form-group { margin-bottom: 0.9rem; }
+    .form-group label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 0.6rem 0.75rem; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.25rem; }
+    .helper-text { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
   </style>
 </head>
-<body class="h-full flex flex-col font-sans text-paper-900 dark:text-gray-100 bg-paper-50 dark:bg-darkBg-900 transition-colors duration-200 selection:bg-amberAccent selection:text-white">
+<body>
 
-  <!-- TOP HEADER / BANNER -->
-  <header class="bg-paper-900 dark:bg-darkBg-800 text-paper-50 border-b border-paper-800 dark:border-darkBg-700 sticky top-0 z-30 shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-      
-      <!-- Logo / Title -->
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-full bg-amberAccent/20 flex items-center justify-center border border-amberAccent/40">
-          <i class="fa-solid me-0 fa-book-bookmark text-amberAccent text-xl"></i>
-        </div>
-        <div>
-          <h1 class="font-display font-bold text-lg sm:text-xl tracking-wider text-paper-50">ATENA <span class="text-amberAccent font-light">LIBRARY</span></h1>
-          <p class="text-xs text-paper-300 font-sans tracking-wide">Personal Collection & Loan Registry</p>
-        </div>
-      </div>
+<header>
+  <div class="brand">
+    <h1>📚 Personal Library</h1>
+    <span id="roleBadge" class="role-badge">Visitor View</span>
+  </div>
+  <div class="header-actions">
+    <button id="notifBtn" class="notif-pill" style="display:none;" onclick="openOwnerTab('requestsTab')">
+      🔔 Alerts <span id="alertCount" class="badge-count">0</span>
+    </button>
+    <button onclick="toggleDarkMode()">🌓 Theme</button>
+    <button id="ownerToggleBtn" onclick="handleOwnerToggle()">🔒 Owner Login</button>
+  </div>
+</header>
 
-      <!-- Controls Right: Dark Mode, View Mode Toggle & Add Button -->
-      <div class="flex items-center space-x-2 sm:space-x-3">
-        
-        <!-- Dark Mode Toggle Button -->
-        <button id="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode" class="p-2 rounded-full bg-paper-800 dark:bg-darkBg-700 hover:bg-paper-700 dark:hover:bg-darkBg-600 text-amberAccent border border-paper-700 dark:border-darkBg-600 transition flex items-center justify-center w-9 h-9">
-          <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
-        </button>
-
-        <!-- Mode Switcher Pill -->
-        <div class="bg-paper-800/80 dark:bg-darkBg-700/80 p-1 rounded-full border border-paper-800 dark:border-darkBg-600 flex items-center">
-          <button id="btn-mode-owner" onclick="setMode('owner')" class="px-3 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 transition-all">
-            <i class="fa-solid fa-key text-[10px]"></i>
-            <span class="hidden sm:inline">Owner View</span>
-          </button>
-          <button id="btn-mode-public" onclick="setMode('public')" class="px-3 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1.5 transition-all">
-            <i class="fa-solid fa-eye text-[10px]"></i>
-            <span class="hidden sm:inline">Public Visitor</span>
-          </button>
-        </div>
-
-        <!-- Add Book Button (Owner Only) -->
-        <button id="btn-add-book-header" onclick="openAddModal()" class="owner-only bg-amberAccent hover:bg-amberAccent/90 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2 shadow-sm transition">
-          <i class="fa-solid fa-plus"></i>
-          <span class="hidden sm:inline">Add Book</span>
-        </button>
-
+<main>
+  <!-- OWNER DASHBOARD -->
+  <section id="ownerPanel" class="owner-panel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+      <h2>Owner Control Panel</h2>
+      <div style="display:flex; gap:0.5rem;">
+        <button class="primary" onclick="openBookModal()">+ Add Book</button>
+        <button onclick="openSettingsModal()">⚙️ Settings & Email</button>
       </div>
     </div>
-  </header>
 
-  <!-- VISITOR BANNER (Shown in Public Mode) -->
-  <div id="visitor-banner" class="hidden bg-burgundy-900 text-paper-100 text-xs py-2 px-4 text-center border-b border-burgundy-800 flex items-center justify-center space-x-2">
-    <i class="fa-solid fa-circle-info text-amberAccent"></i>
-    <span>You are viewing this catalog in <strong>Public Visitor Mode</strong> (Read-Only). Adding, editing, and changing loan statuses are disabled.</span>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="requestsTab" onclick="openOwnerTab('requestsTab')">
+        Borrow Requests (<span id="reqTabCount">0</span>)
+      </button>
+      <button class="tab-btn" data-tab="loansTab" onclick="openOwnerTab('loansTab')">
+        Active Loans & Due Dates (<span id="loanTabCount">0</span>)
+      </button>
+      <button class="tab-btn" data-tab="backupTab" onclick="openOwnerTab('backupTab')">
+        Export / Import Data
+      </button>
+    </div>
+
+    <!-- Requests Inbox -->
+    <div id="requestsTab" class="tab-content active">
+      <div id="requestsList"></div>
+    </div>
+
+    <!-- Active Loans & Due Dates -->
+    <div id="loansTab" class="tab-content">
+      <div id="loansList"></div>
+    </div>
+
+    <!-- Backup / Sync -->
+    <div id="backupTab" class="tab-content">
+      <p class="sub" style="margin-bottom:0.75rem; color:var(--text-muted); font-size:0.875rem;">
+        Because GitHub Pages stores browser data locally, export a backup file whenever you update books or approve loans so you can restore or transfer data across devices.
+      </p>
+      <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+        <button class="primary" onclick="exportData()">⬇️ Export Library JSON</button>
+        <button onclick="document.getElementById('importFile').click()">⬆️ Import Library JSON</button>
+        <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)" />
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH & FILTERS (VISIBLE TO EVERYONE) -->
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search by title, author, or category..." oninput="renderBooks()" />
+    <select id="statusFilter" onchange="renderBooks()">
+      <option value="all">All Books</option>
+      <option value="available">Available Now</option>
+      <option value="borrowed">Currently Borrowed</option>
+      <option value="free">Free to Borrow</option>
+      <option value="paid">Paid Rental</option>
+    </select>
   </div>
 
-  <!-- MAIN CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col space-y-6">
+  <!-- CATALOGUE GRID -->
+  <div id="bookGrid" class="grid"></div>
+</main>
 
-    <!-- SEARCH & FILTER BAR -->
-    <div class="bg-white dark:bg-darkBg-800 rounded-xl p-4 sm:p-5 shadow-sm border border-paper-200 dark:border-darkBg-700 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors">
-      
-      <!-- Search Input -->
-      <div class="relative w-full sm:w-96">
-        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-paper-300 dark:text-gray-500"></i>
-        <input 
-          type="text" 
-          id="search-input" 
-          oninput="handleSearchFilter()" 
-          placeholder="Search by title, author, or tags..." 
-          class="w-full pl-10 pr-4 py-2 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-sm text-paper-900 dark:text-gray-100 placeholder-paper-300 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amberAccent focus:border-transparent transition"
-        />
+<!-- VISITOR BORROW REQUEST MODAL -->
+<div id="requestModal" class="modal-backdrop">
+  <div class="modal">
+    <h2>Request to Borrow</h2>
+    <p id="reqBookSummary" class="sub"></p>
+    <form id="borrowRequestForm" onsubmit="submitBorrowRequest(event)">
+      <input type="hidden" id="reqBookId" />
+      <div class="form-group">
+        <label>Your Name *</label>
+        <input type="text" id="visitorName" required placeholder="e.g., Alex Smith" />
       </div>
-
-      <!-- Filter Controls & Stats -->
-      <div class="flex flex-wrap items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
-        
-        <!-- Status Filter Pills -->
-        <div class="flex bg-paper-100 dark:bg-darkBg-900 p-1 rounded-lg text-xs font-medium border border-paper-200 dark:border-darkBg-700">
-          <button id="filter-all" onclick="setFilter('all')" class="px-3 py-1.5 rounded-md transition font-semibold">All Books</button>
-          <button id="filter-available" onclick="setFilter('available')" class="px-3 py-1.5 rounded-md transition">Available</button>
-          <button id="filter-lent" onclick="setFilter('lent')" class="px-3 py-1.5 rounded-md transition">Lent Out</button>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="text-xs text-paper-800 dark:text-gray-300 bg-paper-100 dark:bg-darkBg-900 px-3 py-2 rounded-lg border border-paper-200 dark:border-darkBg-700 flex items-center space-x-3">
-          <span>Total: <strong id="stat-total" class="text-paper-900 dark:text-white">0</strong></span>
-          <span class="text-paper-300 dark:text-darkBg-600">|</span>
-          <span class="text-forestGreen dark:text-emerald-400 font-medium">Lent: <strong id="stat-lent" class="text-burgundy-700 dark:text-red-400">0</strong></span>
-        </div>
-
+      <div class="form-group">
+        <label>Phone Number *</label>
+        <input type="tel" id="visitorPhone" required placeholder="e.g., (208) 555-0192" />
       </div>
-
-    </div>
-
-    <!-- CATALOG GRID -->
-    <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <!-- Books injected dynamically here -->
-    </div>
-
-    <!-- EMPTY STATE -->
-    <div id="empty-state" class="hidden flex-col items-center justify-center py-16 text-center space-y-4 bg-white dark:bg-darkBg-800 rounded-xl border border-dashed border-paper-300 dark:border-darkBg-600 p-8">
-      <div class="w-16 h-16 rounded-full bg-paper-100 dark:bg-darkBg-700 flex items-center justify-center text-paper-300 dark:text-gray-500 text-2xl">
-        <i class="fa-solid fa-book-open"></i>
+      <div class="form-group">
+        <label>How long would you like to borrow it? / Notes</label>
+        <textarea id="visitorNotes" rows="3" placeholder="e.g., Hoping to borrow for 2 weeks for a class project..."></textarea>
       </div>
-      <div>
-        <h3 class="text-base font-bold text-paper-900 dark:text-white">No books found</h3>
-        <p id="empty-state-text" class="text-sm text-paper-800 dark:text-gray-400 max-w-sm mt-1">Try adjusting your search query or status filter to find what you're looking for.</p>
+      <div class="modal-actions">
+        <button type="button" onclick="closeModal('requestModal')">Cancel</button>
+        <button type="submit" class="primary">Send Borrow Request</button>
       </div>
-      <button onclick="resetSearchAndFilter()" class="text-xs text-amberAccent font-bold underline hover:text-amberAccent/80">Clear filters</button>
-    </div>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="bg-paper-100 dark:bg-darkBg-800 border-t border-paper-200 dark:border-darkBg-700 py-6 text-center text-xs text-paper-800 dark:text-gray-400 transition-colors">
-    <div class="max-w-7xl mx-auto px-4">
-      <p>Personal Book Catalog & Loan System &bull; Keeping track of your beloved physical library.</p>
-    </div>
-  </footer>
-
-  <!-- ==================== MODALS ==================== -->
-
-  <!-- 1. ADD / EDIT BOOK MODAL -->
-  <div id="modal-book-form" class="fixed inset-0 bg-paper-900/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-darkBg-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-paper-200 dark:border-darkBg-700 transition-colors">
-      
-      <!-- Modal Header -->
-      <div class="bg-paper-900 dark:bg-darkBg-900 text-paper-50 px-6 py-4 flex items-center justify-between border-b border-paper-800 dark:border-darkBg-700">
-        <h3 id="modal-form-title" class="font-serif text-lg font-bold">Add New Book to Library</h3>
-        <button onclick="closeBookModal()" class="text-paper-300 dark:text-gray-400 hover:text-white transition">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <!-- Form Content Scrollable -->
-      <form id="book-form" onsubmit="handleFormSubmit(event)" class="p-6 overflow-y-auto flex-1 space-y-5">
-        <input type="hidden" id="form-book-id" value="" />
-
-        <!-- Row 1: Title & Author -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-paper-800 dark:text-gray-300 uppercase tracking-wider mb-1">Book Title *</label>
-            <input type="text" id="form-title" required class="w-full px-3 py-2 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-sm text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" placeholder="e.g. Dune" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-paper-800 dark:text-gray-300 uppercase tracking-wider mb-1">Author *</label>
-            <input type="text" id="form-author" required class="w-full px-3 py-2 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-sm text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" placeholder="e.g. Frank Herbert" />
-          </div>
-        </div>
-
-        <!-- Row 2: ISBN & Condition Score -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-bold text-paper-800 dark:text-gray-300 uppercase tracking-wider mb-1">ISBN / Identifier</label>
-            <input type="text" id="form-isbn" class="w-full px-3 py-2 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-sm text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" placeholder="e.g. 978-0441172719" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-paper-800 dark:text-gray-300 uppercase tracking-wider mb-1">Copy Condition</label>
-            <select id="form-condition" class="w-full px-3 py-2 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-sm text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none">
-              <option value="Like New">✨ Like New (Pristine)</option>
-              <option value="Very Good">📖 Very Good (Light wear)</option>
-              <option value="Good" selected>👍 Good (Read copy, solid)</option>
-              <option value="Fair">⚡ Fair (Wear/dog-ears/highlighted)</option>
-              <option value="Poor / Vintage">⏳ Poor / Vintage (Fragile/Damaged)</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Cover Image Input (File Upload OR URL) -->
-        <div>
-          <label class="block text-xs font-bold text-paper-800 dark:text-gray-300 uppercase tracking-wider mb-1">Exact Copy Cover / Photo *</label>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
-            
-            <!-- Preview Box -->
-            <div id="image-preview-container" class="sm:col-span-1 h-40 bg-paper-100 dark:bg-darkBg-900 border-2 border-dashed border-paper-300 dark:border-darkBg-600 rounded-lg flex flex-col items-center justify-center relative overflow-hidden group">
-              <img id="image-preview" src="" class="hidden w-full h-full object-cover" />
-              <div id="image-placeholder" class="text-center p-2">
-                <i class="fa-solid fa-camera text-paper-300 dark:text-gray-500 text-2xl mb-1"></i>
-                <p class="text-[10px] text-paper-800 dark:text-gray-400">No Image Selected</p>
-              </div>
-            </div>
-
-            <!-- Inputs -->
-            <div class="sm:col-span-2 space-y-3">
-              <div>
-                <label class="block text-[11px] text-paper-800 dark:text-gray-300 mb-1">Upload Photo of Your Copy:</label>
-                <input type="file" id="form-image-file" accept="image/*" onchange="handleFileSelect(event)" class="text-xs text-paper-800 dark:text-gray-300 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-paper-200 dark:file:bg-darkBg-700 file:text-paper-800 dark:file:text-gray-200 hover:file:bg-paper-300 dark:hover:file:bg-darkBg-600 cursor-pointer" />
-              </div>
-              <div class="relative flex py-1 items-center">
-                <div class="flex-grow border-t border-paper-200 dark:border-darkBg-600"></div>
-                <span class="flex-shrink mx-2 text-[10px] text-paper-300 dark:text-gray-500 uppercase">Or Image Web URL</span>
-                <div class="flex-grow border-t border-paper-200 dark:border-darkBg-600"></div>
-              </div>
-              <div>
-                <input type="url" id="form-image-url" oninput="handleUrlInput(event)" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-1.5 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-xs text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" />
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Condition Notes -->
-        <div>
-          <label class="block text-xs font-bold text-paper-800 dark:text-gray-300 uppercase tracking-wider mb-1">Physical Condition Notes</label>
-          <input type="text" id="form-condition-notes" class="w-full px-3 py-2 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-sm text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" placeholder="e.g. Inscribed on title page, minor crease on back cover." />
-        </div>
-
-        <!-- Personal Review / Thoughts -->
-        <div>
-          <label class="block text-xs font-bold text-paper-800 dark:text-gray-300 uppercase tracking-wider mb-1">Personal Thoughts / Review</label>
-          <textarea id="form-review" rows="3" class="w-full px-3 py-2 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-sm text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" placeholder="What did you think of this book? Why is it special to your collection?"></textarea>
-        </div>
-
-        <!-- Initial Lending Status Toggle in Form -->
-        <div class="border-t border-paper-200 dark:border-darkBg-700 pt-4">
-          <label class="flex items-center space-x-2 cursor-pointer mb-2">
-            <input type="checkbox" id="form-is-lent" onchange="toggleFormLendingFields()" class="rounded border-paper-300 text-burgundy-700 focus:ring-burgundy-700 w-4 h-4">
-            <span class="text-sm font-semibold text-paper-900 dark:text-gray-200">Mark as currently lent out</span>
-          </label>
-
-          <div id="form-lending-details" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 pl-6 pt-2">
-            <div>
-              <label class="block text-[11px] font-bold text-paper-800 dark:text-gray-300 mb-1">Lent To (Borrower Name)</label>
-              <input type="text" id="form-lent-to" class="w-full px-3 py-1.5 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-xs text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" placeholder="e.g. Sarah Jenkins" />
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-paper-800 dark:text-gray-300 mb-1">Date Lent</label>
-              <input type="date" id="form-lent-date" class="w-full px-3 py-1.5 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-xs text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="flex justify-end space-x-3 pt-4 border-t border-paper-200 dark:border-darkBg-700">
-          <button type="button" onclick="closeBookModal()" class="px-4 py-2 rounded-lg text-xs font-semibold text-paper-800 dark:text-gray-300 hover:bg-paper-100 dark:hover:bg-darkBg-700 transition">Cancel</button>
-          <button type="submit" class="px-5 py-2 rounded-lg text-xs font-bold text-white bg-burgundy-700 hover:bg-burgundy-800 transition shadow-sm">Save Book to Library</button>
-        </div>
-
-      </form>
-    </div>
+    </form>
   </div>
+</div>
 
-  <!-- 2. QUICK LEND / RETURN MODAL -->
-  <div id="modal-lend" class="fixed inset-0 bg-paper-900/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-darkBg-800 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-paper-200 dark:border-darkBg-700 space-y-4">
-      <div class="flex items-center justify-between border-b border-paper-200 dark:border-darkBg-700 pb-3">
-        <h3 class="font-serif font-bold text-lg text-paper-900 dark:text-white" id="lend-modal-title">Lend Out Book</h3>
-        <button onclick="closeLendModal()" class="text-paper-300 dark:text-gray-400 hover:text-paper-900 dark:hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+<!-- OWNER APPROVE MODAL (SETS DUE DATE) -->
+<div id="approveModal" class="modal-backdrop">
+  <div class="modal">
+    <h2>Approve Borrow Request</h2>
+    <p id="approveSummary" class="sub"></p>
+    <form onsubmit="confirmApproval(event)">
+      <input type="hidden" id="approveReqId" />
+      <div class="form-group">
+        <label>Return Due Date *</label>
+        <input type="date" id="approveDueDate" required />
+        <div class="helper-text">You will see an alert on your dashboard when this date arrives or passes.</div>
       </div>
-
-      <input type="hidden" id="lend-book-id" />
-
-      <p class="text-xs text-paper-800 dark:text-gray-300" id="lend-modal-subtitle">Recording a loan for this item:</p>
-
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-paper-800 dark:text-gray-300 mb-1">Borrower's Name *</label>
-          <input type="text" id="lend-borrower-name" required placeholder="Who is taking this book?" class="w-full px-3 py-2 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-sm text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-paper-800 dark:text-gray-300 mb-1">Date Lent *</label>
-          <input type="date" id="lend-date" required class="w-full px-3 py-2 bg-paper-50 dark:bg-darkBg-900 border border-paper-200 dark:border-darkBg-600 rounded-lg text-sm text-paper-900 dark:text-gray-100 focus:ring-2 focus:ring-amberAccent focus:outline-none" />
-        </div>
+      <div class="modal-actions">
+        <button type="button" onclick="closeModal('approveModal')">Cancel</button>
+        <button type="submit" class="success">Confirm & Mark Borrowed</button>
       </div>
-
-      <div class="flex justify-end space-x-2 pt-3 border-t border-paper-200 dark:border-darkBg-700">
-        <button onclick="closeLendModal()" class="px-4 py-2 text-xs font-semibold text-paper-800 dark:text-gray-300 hover:bg-paper-100 dark:hover:bg-darkBg-700 rounded-lg">Cancel</button>
-        <button onclick="submitLendAction()" class="px-4 py-2 text-xs font-bold text-white bg-burgundy-700 hover:bg-burgundy-800 rounded-lg">Confirm Loan</button>
-      </div>
-    </div>
+    </form>
   </div>
+</div>
 
-  <!-- 3. BOOK DETAIL VIEW MODAL (Public & Owner Detailed Inspection) -->
-  <div id="modal-detail" class="fixed inset-0 bg-paper-900/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white dark:bg-darkBg-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-paper-200 dark:border-darkBg-700">
-      
-      <div class="relative bg-paper-900 dark:bg-darkBg-900 text-paper-50 p-6 flex items-start justify-between border-b border-paper-800 dark:border-darkBg-700">
-        <div class="pr-8">
-          <span id="detail-badge" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"></span>
-          <h2 id="detail-title" class="font-serif text-2xl font-bold mt-2 text-paper-50"></h2>
-          <p id="detail-author" class="text-sm text-paper-300 dark:text-gray-400 mt-0.5"></p>
-        </div>
-        <button onclick="closeDetailModal()" class="text-paper-300 dark:text-gray-400 hover:text-white transition p-1">
-          <i class="fa-solid fa-xmark text-xl"></i>
-        </button>
+<!-- OWNER ADD / EDIT BOOK MODAL -->
+<div id="bookModal" class="modal-backdrop">
+  <div class="modal">
+    <h2 id="bookModalTitle">Add Book</h2>
+    <form onsubmit="saveBook(event)">
+      <input type="hidden" id="editBookId" />
+      <div class="form-group">
+        <label>Book Title *</label>
+        <input type="text" id="bookTitle" required />
       </div>
-
-      <div class="p-6 overflow-y-auto space-y-6 flex-1 bg-paper-50 dark:bg-darkBg-900">
-        
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <!-- Cover -->
-          <div class="sm:col-span-1">
-            <div class="aspect-[2/3] rounded-lg shadow-md overflow-hidden bg-paper-200 dark:bg-darkBg-700 border border-paper-300 dark:border-darkBg-600">
-              <img id="detail-cover" src="" alt="Book Cover" class="w-full h-full object-cover" />
-            </div>
-          </div>
-
-          <!-- Metadata & Status -->
-          <div class="sm:col-span-2 space-y-4">
-            
-            <!-- Loan Box -->
-            <div id="detail-loan-box" class="p-4 rounded-xl border"></div>
-
-            <!-- Quick Info Pill Grid -->
-            <div class="grid grid-cols-2 gap-3">
-              <div class="bg-white dark:bg-darkBg-800 p-3 rounded-lg border border-paper-200 dark:border-darkBg-700 shadow-sm">
-                <span class="block text-[10px] font-bold uppercase tracking-wider text-paper-300 dark:text-gray-500">Condition</span>
-                <span id="detail-condition" class="text-sm font-semibold text-paper-900 dark:text-gray-100"></span>
-              </div>
-              <div class="bg-white dark:bg-darkBg-800 p-3 rounded-lg border border-paper-200 dark:border-darkBg-700 shadow-sm">
-                <span class="block text-[10px] font-bold uppercase tracking-wider text-paper-300 dark:text-gray-500">ISBN / Ref</span>
-                <span id="detail-isbn" class="text-sm font-semibold text-paper-900 dark:text-gray-100"></span>
-              </div>
-            </div>
-
-            <!-- Condition Details -->
-            <div class="bg-white dark:bg-darkBg-800 p-4 rounded-lg border border-paper-200 dark:border-darkBg-700 shadow-sm">
-              <h4 class="text-xs font-bold text-paper-800 dark:text-gray-300 uppercase tracking-wider mb-1">Copy Condition & Physical Notes</h4>
-              <p id="detail-condition-notes" class="text-xs text-paper-800 dark:text-gray-300 leading-relaxed italic"></p>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Personal Review -->
-        <div class="bg-white dark:bg-darkBg-800 p-5 rounded-xl border border-paper-200 dark:border-darkBg-700 shadow-sm">
-          <h4 class="text-xs font-bold text-amberAccent uppercase tracking-wider mb-2 flex items-center space-x-1.5">
-            <i class="fa-solid fa-quote-left"></i>
-            <span>Owner's Review & Thoughts</span>
-          </h4>
-          <p id="detail-review" class="text-sm text-paper-900 dark:text-gray-100 leading-relaxed font-serif italic"></p>
-        </div>
-
+      <div class="form-group">
+        <label>Author *</label>
+        <input type="text" id="bookAuthor" required />
       </div>
-
-      <!-- Detail Actions -->
-      <div class="bg-paper-100 dark:bg-darkBg-800 px-6 py-4 border-t border-paper-200 dark:border-darkBg-700 flex items-center justify-between">
-        <div id="detail-owner-actions" class="owner-only flex space-x-2">
-          <button id="btn-detail-edit" onclick="" class="px-3 py-1.5 bg-paper-200 dark:bg-darkBg-700 hover:bg-paper-300 dark:hover:bg-darkBg-600 text-paper-900 dark:text-gray-200 text-xs font-semibold rounded-lg transition">Edit Book</button>
-          <button id="btn-detail-delete" onclick="" class="px-3 py-1.5 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 text-xs font-semibold rounded-lg transition">Delete</button>
-        </div>
-        <button onclick="closeDetailModal()" class="px-4 py-1.5 bg-paper-800 dark:bg-darkBg-700 text-paper-50 text-xs font-semibold rounded-lg hover:bg-paper-900 dark:hover:bg-darkBg-600 transition ml-auto">Close</button>
+      <div class="form-group">
+        <label>Category / Genre</label>
+        <input type="text" id="bookCategory" placeholder="e.g., Theology, Fiction, History" />
       </div>
-
-    </div>
+      <div class="form-group">
+        <label>Cover Image URL (Optional)</label>
+        <input type="url" id="bookCover" placeholder="https://..." />
+      </div>
+      <div class="form-group">
+        <label>Borrow Cost ($ USD — enter 0 for Free)</label>
+        <input type="number" id="bookCost" min="0" step="0.50" value="0" required />
+      </div>
+      <div class="form-group">
+        <label>Rental Term / Duration Label</label>
+        <input type="text" id="bookTerm" placeholder="e.g., for the term, for 2 weeks, per month" value="for 2 weeks" />
+        <div class="helper-text">Displays as e.g. "$5 to borrow for the term" when cost is above $0.</div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" onclick="closeModal('bookModal')">Cancel</button>
+        <button type="submit" class="primary">Save Book</button>
+      </div>
+    </form>
   </div>
+</div>
 
+<!-- OWNER SETTINGS MODAL (PIN & FORMSPREE EMAIL) -->
+<div id="settingsModal" class="modal-backdrop">
+  <div class="modal">
+    <h2>Owner Settings</h2>
+    <form onsubmit="saveSettings(event)">
+      <div class="form-group">
+        <label>Owner PIN</label>
+        <input type="password" id="settingPin" required />
+        <div class="helper-text">Default PIN is <strong>1234</strong>. Change it here.</div>
+      </div>
+      <div class="form-group">
+        <label>Formspree Endpoint URL (For Email Notifications)</label>
+        <input type="url" id="settingFormspree" placeholder="https://formspree.io/f/yourFormID" />
+        <div class="helper-text">Paste your free Formspree URL to receive an instant email whenever a visitor submits a borrow request.</div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" onclick="closeModal('settingsModal')">Cancel</button>
+        <button type="submit" class="primary">Save Settings</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-  <!-- JavaScript Application Logic -->
-  <script>
-    // Initial Mock Books Data
-    const INITIAL_BOOKS = [
+<script>
+  const STORAGE_KEY = "personal_library_v2";
+
+  const defaultData = {
+    settings: {
+      pin: "1234",
+      formspreeUrl: ""
+    },
+    books: [
       {
-        id: 'book-1',
-        title: 'The Master and Margarita',
-        author: 'Mikhail Bulgakov',
-        isbn: '978-0141180144',
-        condition: 'Very Good',
-        conditionNotes: 'Vintage paperback edition. Slight yellowing on edge pages, but spine is completely intact without creases.',
-        review: 'One of my absolute favorite novels of all time. The satire is razor sharp and the devil\'s visit to Moscow is mesmerizing. A total classic.',
-        coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=800',
-        isLent: true,
-        lentTo: 'Elena Rostova',
-        lentDate: '2024-02-14'
+        id: "b1",
+        title: "Mere Christendom",
+        author: "Douglas Wilson",
+        category: "Theology",
+        cover: "",
+        cost: 0,
+        term: "for 2 weeks",
+        status: "available",
+        borrower: null
       },
       {
-        id: 'book-2',
-        title: 'Dune',
-        author: 'Frank Herbert',
-        isbn: '978-0441172719',
-        condition: 'Good',
-        conditionNotes: 'Read multiple times. Minor shelf wear on corners and small crease on front cover.',
-        review: 'The worldbuilding in Dune is unmatched. Ecological masterpiece wrapped in a political tragedy. Essential sci-fi reading.',
-        coverUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=800',
-        isLent: false,
-        lentTo: '',
-        lentDate: ''
-      },
-      {
-        id: 'book-3',
-        title: 'Designing Data-Intensive Applications',
-        author: 'Martin Kleppmann',
-        isbn: '978-1449373320',
-        condition: 'Like New',
-        conditionNotes: 'Hardcover copy. Pristine condition with dust jacket intact.',
-        review: 'The definitive guide to distributed systems. Highly technical yet wonderfully accessible.',
-        coverUrl: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&q=80&w=800',
-        isLent: true,
-        lentTo: 'David Miller',
-        lentDate: '2024-03-01'
-      },
-      {
-        id: 'book-4',
-        title: '100 Years of Solitude',
-        author: 'Gabriel García Márquez',
-        isbn: '978-0060883287',
-        condition: 'Fair',
-        conditionNotes: 'Well-loved trade paperback with pencil margin notes on chapter 3.',
-        review: 'Magical realism at its highest peak. A breathtaking journey through the Buendía generation.',
-        coverUrl: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=800',
-        isLent: false,
-        lentTo: '',
-        lentDate: ''
+        id: "b2",
+        title: "Introduction to Classical Rhetoric",
+        author: "Edward P.J. Corbett",
+        category: "Humanities",
+        cover: "",
+        cost: 5,
+        term: "for the term",
+        status: "available",
+        borrower: null
       }
-    ];
+    ],
+    requests: []
+  };
 
-    // State Variables
-    let books = [];
-    let currentMode = 'owner'; // 'owner' or 'public'
-    let currentFilter = 'all'; // 'all', 'available', 'lent'
-    let searchQuery = '';
-    let currentImageDataUrl = '';
+  let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultData;
+  let isOwner = false;
 
-    // Lifecycle Init
-    window.onload = function() {
-      initTheme();
-      loadBooksFromStorage();
-      renderCatalog();
-      updateStats();
-      setMode('owner'); // Default to owner view
-    };
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    updateNotifications();
+    renderBooks();
+    if (isOwner) {
+      renderRequests();
+      renderLoans();
+    }
+  }
 
-    // Theme Switcher Logic
-    function initTheme() {
-      const savedTheme = localStorage.getItem('atena_library_theme');
-      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-        updateThemeIcon(true);
-      } else {
-        document.documentElement.classList.remove('dark');
-        updateThemeIcon(false);
-      }
+  // Theme Toggle
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("library_dark", document.body.classList.contains("dark"));
+  }
+  if (localStorage.getItem("library_dark") === "true") {
+    document.body.classList.add("dark");
+  }
+
+  // Owner Login / Logout
+  function handleOwnerToggle() {
+    if (isOwner) {
+      isOwner = false;
+      document.getElementById("ownerPanel").classList.remove("active");
+      document.getElementById("roleBadge").textContent = "Visitor View";
+      document.getElementById("roleBadge").classList.remove("owner");
+      document.getElementById("ownerToggleBtn").textContent = "🔒 Owner Login";
+      document.getElementById("notifBtn").style.display = "none";
+      renderBooks();
+      return;
     }
 
-    function toggleTheme() {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('atena_library_theme', isDark ? 'dark' : 'light');
-      updateThemeIcon(isDark);
-      setFilter(currentFilter); // Refresh filter UI colors
+    const entered = prompt("Enter Owner PIN (default is 1234):");
+    if (entered === state.settings.pin) {
+      isOwner = true;
+      document.getElementById("ownerPanel").classList.add("active");
+      document.getElementById("roleBadge").textContent = "Owner Mode";
+      document.getElementById("roleBadge").classList.add("owner");
+      document.getElementById("ownerToggleBtn").textContent = "🚪 Exit Owner Mode";
+      document.getElementById("notifBtn").style.display = "inline-flex";
+      updateNotifications();
+      renderRequests();
+      renderLoans();
+      renderBooks();
+    } else if (entered !== null) {
+      alert("Incorrect PIN.");
+    }
+  }
+
+  function openOwnerTab(tabId) {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
+    document.getElementById(tabId).classList.add("active");
+  }
+
+  // Notifications & Due Date Check
+  function getOverdueBooks() {
+    const today = new Date().toISOString().split("T")[0];
+    return state.books.filter(b => b.status === "borrowed" && b.borrower && b.borrower.dueDate <= today);
+  }
+
+  function updateNotifications() {
+    const pendingCount = state.requests.length;
+    const overdueCount = getOverdueBooks().length;
+    const totalAlerts = pendingCount + overdueCount;
+
+    document.getElementById("alertCount").textContent = totalAlerts;
+    document.getElementById("reqTabCount").textContent = pendingCount;
+    document.getElementById("loanTabCount").textContent = state.books.filter(b => b.status === "borrowed").length;
+  }
+
+  // Render Book Catalogue
+  function renderBooks() {
+    const grid = document.getElementById("bookGrid");
+    const query = document.getElementById("searchInput").value.toLowerCase();
+    const filter = document.getElementById("statusFilter").value;
+
+    const filtered = state.books.filter(book => {
+      const matchesText =
+        book.title.toLowerCase().includes(query) ||
+        book.author.toLowerCase().includes(query) ||
+        (book.category && book.category.toLowerCase().includes(query));
+
+      if (!matchesText) return false;
+      if (filter === "available") return book.status === "available";
+      if (filter === "borrowed") return book.status === "borrowed";
+      if (filter === "free") return Number(book.cost) === 0;
+      if (filter === "paid") return Number(book.cost) > 0;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<p style="color:var(--text-muted);">No matching books found.</p>`;
+      return;
     }
 
-    function updateThemeIcon(isDark) {
-      const icon = document.getElementById('theme-icon');
-      if (icon) {
-        icon.className = isDark ? 'fa-solid fa-sun text-sm' : 'fa-solid fa-moon text-sm';
-      }
-    }
+    grid.innerHTML = filtered.map(book => {
+      const isBorrowed = book.status === "borrowed";
+      const costNum = Number(book.cost);
+      const priceLabel = costNum > 0 ? `$${costNum} to borrow ${book.term}` : "Free to borrow";
+      const coverStyle = book.cover ? `background-image: url('${book.cover}');` : "";
 
-    // Storage Handling
-    function loadBooksFromStorage() {
-      const stored = localStorage.getItem('atena_library_books');
-      if (stored) {
-        try {
-          books = JSON.parse(stored);
-        } catch(e) {
-          books = INITIAL_BOOKS;
-        }
-      } else {
-        books = INITIAL_BOOKS;
-        saveBooksToStorage();
-      }
-    }
-
-    function saveBooksToStorage() {
-      localStorage.setItem('atena_library_books', JSON.stringify(books));
-    }
-
-    // Mode Toggle Logic
-    function setMode(mode) {
-      currentMode = mode;
-      
-      const btnOwner = document.getElementById('btn-mode-owner');
-      const btnPublic = document.getElementById('btn-mode-public');
-      const banner = document.getElementById('visitor-banner');
-
-      if (mode === 'owner') {
-        btnOwner.className = "px-3 py-1.5 rounded-full text-xs font-bold bg-amberAccent text-white shadow-sm flex items-center space-x-1.5 transition-all";
-        btnPublic.className = "px-3 py-1.5 rounded-full text-xs font-semibold text-paper-300 hover:text-white flex items-center space-x-1.5 transition-all";
-        banner.classList.add('hidden');
-        document.body.classList.remove('public-mode');
-      } else {
-        btnPublic.className = "px-3 py-1.5 rounded-full text-xs font-bold bg-burgundy-700 text-white shadow-sm flex items-center space-x-1.5 transition-all";
-        btnOwner.className = "px-3 py-1.5 rounded-full text-xs font-semibold text-paper-300 hover:text-white flex items-center space-x-1.5 transition-all";
-        banner.classList.remove('hidden');
-        document.body.classList.add('public-mode');
-      }
-
-      // Re-render UI elements dependent on owner/public status
-      renderCatalog();
-    }
-
-    // Filter & Search Logic
-    function setFilter(filter) {
-      currentFilter = filter;
-      const isDark = document.documentElement.classList.contains('dark');
-      
-      // Update Filter UI buttons
-      ['all', 'available', 'lent'].forEach(f => {
-        const btn = document.getElementById(`filter-${f}`);
-        if (f === filter) {
-          btn.className = isDark 
-            ? "px-3 py-1.5 rounded-md transition font-bold bg-darkBg-700 text-white shadow-sm border border-darkBg-600"
-            : "px-3 py-1.5 rounded-md transition font-bold bg-white text-paper-900 shadow-sm border border-paper-200";
-        } else {
-          btn.className = "px-3 py-1.5 rounded-md transition text-paper-800 dark:text-gray-400 hover:text-paper-900 dark:hover:text-white";
-        }
-      });
-
-      renderCatalog();
-    }
-
-    function handleSearchFilter() {
-      searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
-      renderCatalog();
-    }
-
-    function resetSearchAndFilter() {
-      document.getElementById('search-input').value = '';
-      searchQuery = '';
-      setFilter('all');
-    }
-
-    // Render Function
-    function renderCatalog() {
-      const grid = document.getElementById('catalog-grid');
-      const emptyState = document.getElementById('empty-state');
-      grid.innerHTML = '';
-
-      const filtered = books.filter(book => {
-        // Status filter
-        if (currentFilter === 'available' && book.isLent) return false;
-        if (currentFilter === 'lent' && !book.isLent) return false;
-
-        // Search query filter
-        if (searchQuery) {
-          const matchTitle = book.title.toLowerCase().includes(searchQuery);
-          const matchAuthor = book.author.toLowerCase().includes(searchQuery);
-          const matchIsbn = book.isbn && book.isbn.toLowerCase().includes(searchQuery);
-          const matchBorrower = book.isLent && book.lentTo.toLowerCase().includes(searchQuery);
-          return matchTitle || matchAuthor || matchIsbn || matchBorrower;
-        }
-
-        return true;
-      });
-
-      if (filtered.length === 0) {
-        grid.classList.add('hidden');
-        emptyState.classList.remove('hidden');
-        emptyState.classList.add('flex');
-      } else {
-        grid.classList.remove('hidden');
-        emptyState.classList.add('hidden');
-        emptyState.classList.remove('flex');
-
-        filtered.forEach(book => {
-          grid.appendChild(createBookCard(book));
-        });
-      }
-
-      // Toggle display of owner-only elements throughout DOM
-      const ownerElements = document.querySelectorAll('.owner-only');
-      ownerElements.forEach(el => {
-        if (currentMode === 'public') {
-          el.classList.add('hidden');
-        } else {
-          el.classList.remove('hidden');
-        }
-      });
-
-      updateStats();
-    }
-
-    // Book Card Component Generator
-    function createBookCard(book) {
-      const card = document.createElement('div');
-      card.className = "book-card bg-white dark:bg-darkBg-800 rounded-xl overflow-hidden border border-paper-200 dark:border-darkBg-700 flex flex-col justify-between shadow-sm relative group transition-colors";
-
-      // Badge Styling
-      const badgeHTML = book.isLent
-        ? `<span class="bg-burgundy-900/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm flex items-center space-x-1">
-            <i class="fa-solid fa-hand-holding-hand"></i>
-            <span>Lent Out</span>
-           </span>`
-        : `<span class="bg-forestGreen/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full backdrop-blur-sm shadow-sm flex items-center space-x-1">
-            <i class="fa-solid fa-check"></i>
-            <span>Available</span>
-           </span>`;
-
-      // Borrower Banner if Lent
-      const loanInfoBar = book.isLent
-        ? `<div class="bg-burgundy-700/10 dark:bg-burgundy-900/30 border-t border-burgundy-700/20 dark:border-burgundy-800/40 px-4 py-2 text-xs text-burgundy-800 dark:text-red-300 flex items-center justify-between">
-            <span class="truncate">Lent to: <strong>${escapeHTML(book.lentTo)}</strong></span>
-            <span class="text-[10px] text-burgundy-700 dark:text-red-400 font-medium">${book.lentDate || ''}</span>
-           </div>`
-        : '';
-
-      card.innerHTML = `
-        <div>
-          <!-- Image Box -->
-          <div class="relative aspect-[3/4] bg-paper-200 dark:bg-darkBg-700 overflow-hidden cursor-pointer" onclick="openDetailModal('${book.id}')">
-            <img src="${escapeHTML(book.coverUrl)}" alt="${escapeHTML(book.title)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=800'"/>
-            <div class="absolute top-3 left-3 z-10">
-              ${badgeHTML}
-            </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-paper-900/60 dark:from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-200 flex items-end p-4">
-              <span class="text-xs text-paper-50 font-medium flex items-center space-x-1">
-                <i class="fa-solid fa-expand"></i>
-                <span>View Full Details</span>
+      return `
+        <div class="card">
+          <div class="cover" style="${coverStyle}">
+            <div class="cover-overlay">${book.title}</div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">${book.title}</div>
+            <div class="card-author">by ${book.author} ${book.category ? `• ${book.category}` : ""}</div>
+            <div class="badges">
+              <span class="tag ${isBorrowed ? "borrowed" : "available"}">
+                ${isBorrowed ? "Borrowed" : "Available"}
+              </span>
+              <span class="tag ${costNum > 0 ? "rent" : "free"}">
+                ${priceLabel}
               </span>
             </div>
           </div>
-
-          <!-- Info Box -->
-          <div class="p-4 space-y-2">
-            <div>
-              <h3 class="font-serif font-bold text-base text-paper-900 dark:text-white leading-snug hover:text-amberAccent transition cursor-pointer" onclick="openDetailModal('${book.id}')">${escapeHTML(book.title)}</h3>
-              <p class="text-xs text-paper-800 dark:text-gray-400 font-medium mt-0.5">${escapeHTML(book.author)}</p>
-            </div>
-
-            <!-- Condition Pill -->
-            <div class="flex items-center space-x-2 pt-1">
-              <span class="text-[10px] font-semibold bg-paper-100 dark:bg-darkBg-700 text-paper-800 dark:text-gray-300 border border-paper-200 dark:border-darkBg-600 px-2 py-0.5 rounded">
-                ${escapeHTML(book.condition)} Condition
-              </span>
-            </div>
-
-            <!-- Review snippet -->
-            ${book.review ? `<p class="text-xs text-paper-800 dark:text-gray-300 line-clamp-2 italic font-serif pt-1">"${escapeHTML(book.review)}"</p>` : ''}
-          </div>
-        </div>
-
-        <!-- Footer Actions (Lend/Return & Edit) -->
-        <div>
-          ${loanInfoBar}
-          <div class="px-4 py-3 bg-paper-50 dark:bg-darkBg-900 border-t border-paper-200 dark:border-darkBg-700 flex items-center justify-between transition-colors">
-            
-            <!-- Quick Loan Toggle Button (Owner Only) -->
-            <div class="owner-only">
-              ${book.isLent 
-                ? `<button onclick="returnBook('${book.id}')" class="text-xs bg-forestGreen hover:bg-forestGreen/90 text-white font-semibold px-3 py-1.5 rounded-md transition shadow-xs flex items-center space-x-1">
-                    <i class="fa-solid fa-arrow-rotate-left"></i>
-                    <span>Mark Returned</span>
-                   </button>`
-                : `<button onclick="openLendModal('${book.id}')" class="text-xs bg-burgundy-700 hover:bg-burgundy-800 text-white font-semibold px-3 py-1.5 rounded-md transition shadow-xs flex items-center space-x-1">
-                    <i class="fa-solid fa-hand-holding"></i>
-                    <span>Lend Book</span>
-                   </button>`
-              }
-            </div>
-
-            <!-- Detailed Action Button (Public Mode Fallback) -->
-            <div class="public-only">
-              <button onclick="openDetailModal('${book.id}')" class="text-xs text-paper-800 dark:text-gray-400 hover:text-amberAccent font-medium">Read Notes &rarr;</button>
-            </div>
-
-            <!-- Edit/Delete Action Icons (Owner Only) -->
-            <div class="owner-only flex items-center space-x-2 text-paper-300 dark:text-gray-500">
-              <button onclick="openEditModal('${book.id}')" title="Edit Book" class="hover:text-amberAccent transition p-1">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-              <button onclick="deleteBook('${book.id}')" title="Delete Book" class="hover:text-red-600 transition p-1">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </div>
-
+          <div class="card-footer">
+            ${
+              isBorrowed
+                ? `<button disabled style="opacity:0.6; cursor:not-allowed;">Currently Borrowed</button>`
+                : `<button class="primary" onclick="openRequestModal('${book.id}')">Request to Borrow</button>`
+            }
+            ${
+              isOwner
+                ? `<button onclick="openBookModal('${book.id}')">✏️</button>
+                   <button class="danger" onclick="deleteBook('${book.id}')">🗑️</button>`
+                : ""
+            }
           </div>
         </div>
       `;
+    }).join("");
+  }
 
-      return card;
-    }
+  // Visitor Borrow Request Flow
+  function openRequestModal(bookId) {
+    const book = state.books.find(b => b.id === bookId);
+    if (!book) return;
+    const costNum = Number(book.cost);
+    const terms = costNum > 0 ? `Rental fee: $${costNum} (${book.term})` : "Free to borrow";
 
-    // Modal Control: Add / Edit Book
-    function openAddModal() {
-      document.getElementById('form-book-id').value = '';
-      document.getElementById('modal-form-title').innerText = 'Add New Book to Library';
-      document.getElementById('book-form').reset();
-      
-      currentImageDataUrl = '';
-      resetImagePreview();
+    document.getElementById("reqBookId").value = book.id;
+    document.getElementById("reqBookSummary").textContent = `"${book.title}" by ${book.author} — ${terms}`;
+    document.getElementById("borrowRequestForm").reset();
+    document.getElementById("requestModal").classList.add("open");
+  }
 
-      document.getElementById('form-is-lent').checked = false;
-      toggleFormLendingFields();
+  async function submitBorrowRequest(e) {
+    e.preventDefault();
+    const bookId = document.getElementById("reqBookId").value;
+    const book = state.books.find(b => b.id === bookId);
+    const name = document.getElementById("visitorName").value.trim();
+    const phone = document.getElementById("visitorPhone").value.trim();
+    const notes = document.getElementById("visitorNotes").value.trim();
 
-      document.getElementById('modal-book-form').classList.remove('hidden');
-    }
+    const reqObj = {
+      id: "req_" + Date.now(),
+      bookId: book.id,
+      bookTitle: book.title,
+      cost: book.cost,
+      term: book.term,
+      name,
+      phone,
+      notes,
+      submittedAt: new Date().toLocaleDateString()
+    };
 
-    function openEditModal(id) {
-      const book = books.find(b => b.id === id);
-      if (!book) return;
+    state.requests.push(reqObj);
+    saveState();
 
-      document.getElementById('form-book-id').value = book.id;
-      document.getElementById('modal-form-title').innerText = 'Edit Book Details';
-
-      document.getElementById('form-title').value = book.title;
-      document.getElementById('form-author').value = book.author;
-      document.getElementById('form-isbn').value = book.isbn || '';
-      document.getElementById('form-condition').value = book.condition || 'Good';
-      document.getElementById('form-condition-notes').value = book.conditionNotes || '';
-      document.getElementById('form-review').value = book.review || '';
-      
-      // Image
-      currentImageDataUrl = book.coverUrl;
-      document.getElementById('form-image-url').value = book.coverUrl.startsWith('data:') ? '' : book.coverUrl;
-      setImagePreview(book.coverUrl);
-
-      // Lending fields
-      document.getElementById('form-is-lent').checked = book.isLent;
-      document.getElementById('form-lent-to').value = book.lentTo || '';
-      document.getElementById('form-lent-date').value = book.lentDate || '';
-      toggleFormLendingFields();
-
-      document.getElementById('modal-book-form').classList.remove('hidden');
-    }
-
-    function closeBookModal() {
-      document.getElementById('modal-book-form').classList.add('hidden');
-    }
-
-    // Image Upload & Preview Handlers
-    function handleFileSelect(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          currentImageDataUrl = event.target.result;
-          setImagePreview(currentImageDataUrl);
-          document.getElementById('form-image-url').value = '';
-        };
-        reader.readAsDataURL(file);
+    // Send email notification via Formspree if configured
+    if (state.settings.formspreeUrl) {
+      try {
+        await fetch(state.settings.formspreeUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({
+            subject: `New Book Borrow Request: ${book.title}`,
+            book: book.title,
+            pricing: Number(book.cost) > 0 ? `$${book.cost} (${book.term})` : "Free",
+            visitor_name: name,
+            visitor_phone: phone,
+            duration_notes: notes || "None provided"
+          })
+        });
+      } catch (err) {
+        console.error("Email notification failed:", err);
       }
     }
 
-    function handleUrlInput(e) {
-      const url = e.target.value.trim();
-      if (url) {
-        currentImageDataUrl = url;
-        setImagePreview(url);
-      } else {
-        resetImagePreview();
-      }
+    closeModal("requestModal");
+    alert(`Request sent for "${book.title}"! The library owner will review it shortly.`);
+  }
+
+  // Owner Requests Management
+  function renderRequests() {
+    const container = document.getElementById("requestsList");
+    if (state.requests.length === 0) {
+      container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No pending borrow requests.</p>`;
+      return;
     }
 
-    function setImagePreview(url) {
-      const img = document.getElementById('image-preview');
-      const placeholder = document.getElementById('image-placeholder');
-      img.src = url;
-      img.classList.remove('hidden');
-      placeholder.classList.add('hidden');
-    }
-
-    function resetImagePreview() {
-      const img = document.getElementById('image-preview');
-      const placeholder = document.getElementById('image-placeholder');
-      img.src = '';
-      img.classList.add('hidden');
-      placeholder.classList.remove('hidden');
-    }
-
-    function toggleFormLendingFields() {
-      const isLent = document.getElementById('form-is-lent').checked;
-      const details = document.getElementById('form-lending-details');
-      if (isLent) {
-        details.classList.remove('hidden');
-      } else {
-        details.classList.add('hidden');
-      }
-    }
-
-    // Form Submit Handler
-    function handleFormSubmit(e) {
-      e.preventDefault();
-
-      const bookId = document.getElementById('form-book-id').value;
-      const title = document.getElementById('form-title').value.trim();
-      const author = document.getElementById('form-author').value.trim();
-      const isbn = document.getElementById('form-isbn').value.trim();
-      const condition = document.getElementById('form-condition').value;
-      const conditionNotes = document.getElementById('form-condition-notes').value.trim();
-      const review = document.getElementById('form-review').value.trim();
-      
-      const isLent = document.getElementById('form-is-lent').checked;
-      const lentTo = isLent ? document.getElementById('form-lent-to').value.trim() : '';
-      const lentDate = isLent ? document.getElementById('form-lent-date').value : '';
-
-      // Default fallback image if none provided
-      const coverUrl = currentImageDataUrl || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&q=80&w=800';
-
-      if (bookId) {
-        // Edit Existing
-        const index = books.findIndex(b => b.id === bookId);
-        if (index !== -1) {
-          books[index] = {
-            ...books[index],
-            title,
-            author,
-            isbn,
-            condition,
-            conditionNotes,
-            review,
-            coverUrl,
-            isLent,
-            lentTo,
-            lentDate
-          };
-        }
-      } else {
-        // Create New
-        const newBook = {
-          id: 'book-' + Date.now(),
-          title,
-          author,
-          isbn,
-          condition,
-          conditionNotes,
-          review,
-          coverUrl,
-          isLent,
-          lentTo,
-          lentDate
-        };
-        books.unshift(newBook);
-      }
-
-      saveBooksToStorage();
-      renderCatalog();
-      closeBookModal();
-    }
-
-    // Modal Control: Quick Lend & Return
-    function openLendModal(id) {
-      const book = books.find(b => b.id === id);
-      if (!book) return;
-
-      document.getElementById('lend-book-id').value = book.id;
-      document.getElementById('lend-modal-subtitle').innerText = `Lending out: "${book.title}"`;
-      document.getElementById('lend-borrower-name').value = '';
-      
-      // Default date to today (YYYY-MM-DD)
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('lend-date').value = today;
-
-      document.getElementById('modal-lend').classList.remove('hidden');
-    }
-
-    function closeLendModal() {
-      document.getElementById('modal-lend').classList.add('hidden');
-    }
-
-    function submitLendAction() {
-      const bookId = document.getElementById('lend-book-id').value;
-      const borrower = document.getElementById('lend-borrower-name').value.trim();
-      const date = document.getElementById('lend-date').value;
-
-      if (!borrower) {
-        alert("Please specify the borrower's name.");
-        return;
-      }
-
-      const book = books.find(b => b.id === bookId);
-      if (book) {
-        book.isLent = true;
-        book.lentTo = borrower;
-        book.lentDate = date;
-        saveBooksToStorage();
-        renderCatalog();
-      }
-
-      closeLendModal();
-      
-      // If detail modal is open, refresh detail modal
-      if (!document.getElementById('modal-detail').classList.contains('hidden')) {
-        openDetailModal(bookId);
-      }
-    }
-
-    function returnBook(id) {
-      const book = books.find(b => b.id === id);
-      if (book) {
-        book.isLent = false;
-        book.lentTo = '';
-        book.lentDate = '';
-        saveBooksToStorage();
-        renderCatalog();
-
-        // If detail modal is open, refresh detail modal
-        if (!document.getElementById('modal-detail').classList.contains('hidden')) {
-          openDetailModal(id);
-        }
-      }
-    }
-
-    function deleteBook(id) {
-      if (confirm('Are you sure you want to remove this book from your catalog?')) {
-        books = books.filter(b => b.id !== id);
-        saveBooksToStorage();
-        renderCatalog();
-        closeDetailModal();
-      }
-    }
-
-    // Modal Control: Detailed Book Inspection
-    function openDetailModal(id) {
-      const book = books.find(b => b.id === id);
-      if (!book) return;
-
-      document.getElementById('detail-title').innerText = book.title;
-      document.getElementById('detail-author').innerText = `by ${book.author}`;
-      document.getElementById('detail-cover').src = book.coverUrl;
-      document.getElementById('detail-condition').innerText = book.condition;
-      document.getElementById('detail-isbn').innerText = book.isbn || 'N/A';
-      document.getElementById('detail-condition-notes').innerText = book.conditionNotes || 'No condition notes provided for this copy.';
-      document.getElementById('detail-review').innerText = book.review ? `"${book.review}"` : 'No personal review added yet.';
-
-      // Badge & Loan box styling
-      const badge = document.getElementById('detail-badge');
-      const loanBox = document.getElementById('detail-loan-box');
-
-      if (book.isLent) {
-        badge.className = "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-burgundy-700 text-white";
-        badge.innerText = "Currently Lent Out";
-
-        loanBox.className = "p-4 rounded-xl border border-burgundy-200 dark:border-burgundy-800/50 bg-burgundy-50/50 dark:bg-burgundy-950/30 space-y-2";
-        loanBox.innerHTML = `
-          <div class="flex items-center justify-between text-xs text-burgundy-900 dark:text-red-200">
-            <span class="font-bold flex items-center space-x-1.5">
-              <i class="fa-solid fa-hand-holding-hand text-burgundy-700 dark:text-red-400"></i>
-              <span>Lent To: ${escapeHTML(book.lentTo)}</span>
-            </span>
-            <span class="text-[11px] font-medium text-burgundy-700 dark:text-red-400">Date: ${book.lentDate || 'Unknown'}</span>
+    container.innerHTML = state.requests.map(req => `
+      <div class="list-item">
+        <div>
+          <strong>${req.bookTitle}</strong>
+          <div style="font-size:0.85rem; margin-top:0.2rem;">
+            Requested by: <strong>${req.name}</strong> • 📞 ${req.phone}
           </div>
-          <div class="owner-only pt-1">
-            <button onclick="returnBook('${book.id}')" class="w-full py-1.5 bg-forestGreen hover:bg-forestGreen/90 text-white text-xs font-bold rounded-lg transition">Mark as Returned to Library</button>
+          <div style="font-size:0.82rem; color:var(--text-muted); margin-top:0.2rem;">
+            Notes/Duration: "${req.notes || "No notes"}" (Submitted ${req.submittedAt})
           </div>
-        `;
-      } else {
-        badge.className = "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-forestGreen text-white";
-        badge.innerText = "Available in Library";
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="success" onclick="openApproveModal('${req.id}')">Approve</button>
+          <button class="danger" onclick="denyRequest('${req.id}')">Deny</button>
+        </div>
+      </div>
+    `).join("");
+  }
 
-        loanBox.className = "p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-950/30 flex items-center justify-between";
-        loanBox.innerHTML = `
-          <div class="text-xs text-emerald-900 dark:text-emerald-200 font-semibold flex items-center space-x-2">
-            <i class="fa-solid fa-circle-check text-forestGreen dark:text-emerald-400"></i>
-            <span>This book is on the shelf and available to lend.</span>
-          </div>
-          <div class="owner-only">
-            <button onclick="openLendModal('${book.id}')" class="px-3 py-1 bg-burgundy-700 hover:bg-burgundy-800 text-white text-xs font-bold rounded-lg transition">Lend Out</button>
-          </div>
-        `;
-      }
+  function openApproveModal(reqId) {
+    const req = state.requests.find(r => r.id === reqId);
+    if (!req) return;
+    document.getElementById("approveReqId").value = req.id;
+    document.getElementById("approveSummary").textContent =
+      `Lending "${req.bookTitle}" to ${req.name} (${req.phone}). Visitor note: "${req.notes || "None"}"`;
 
-      // Hook up owner edit/delete buttons
-      document.getElementById('btn-detail-edit').onclick = function() {
-        closeDetailModal();
-        openEditModal(book.id);
+    // Default due date 14 days from today
+    const defaultDue = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
+    document.getElementById("approveDueDate").value = defaultDue;
+    document.getElementById("approveModal").classList.add("open");
+  }
+
+  function confirmApproval(e) {
+    e.preventDefault();
+    const reqId = document.getElementById("approveReqId").value;
+    const dueDate = document.getElementById("approveDueDate").value;
+    const reqIndex = state.requests.findIndex(r => r.id === reqId);
+    if (reqIndex === -1) return;
+
+    const req = state.requests[reqIndex];
+    const book = state.books.find(b => b.id === req.bookId);
+    if (book) {
+      book.status = "borrowed";
+      book.borrower = {
+        name: req.name,
+        phone: req.phone,
+        notes: req.notes,
+        dueDate: dueDate
       };
-      document.getElementById('btn-detail-delete').onclick = function() {
-        deleteBook(book.id);
-      };
-
-      document.getElementById('modal-detail').classList.remove('hidden');
     }
 
-    function closeDetailModal() {
-      document.getElementById('modal-detail').classList.add('hidden');
+    state.requests.splice(reqIndex, 1);
+    saveState();
+    closeModal("approveModal");
+  }
+
+  function denyRequest(reqId) {
+    if (!confirm("Deny and remove this borrow request?")) return;
+    state.requests = state.requests.filter(r => r.id !== reqId);
+    saveState();
+  }
+
+  // Active Loans & Due Dates
+  function renderLoans() {
+    const container = document.getElementById("loansList");
+    const borrowedBooks = state.books.filter(b => b.status === "borrowed");
+    const today = new Date().toISOString().split("T")[0];
+
+    if (borrowedBooks.length === 0) {
+      container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No books are currently checked out.</p>`;
+      return;
     }
 
-    // Helper: Update Statistics Counters
-    function updateStats() {
-      const total = books.length;
-      const lent = books.filter(b => b.isLent).length;
+    container.innerHTML = borrowedBooks.map(book => {
+      const b = book.borrower;
+      const isDue = b.dueDate <= today;
+      return `
+        <div class="list-item ${isDue ? "overdue-alert" : ""}">
+          <div>
+            <strong>${book.title}</strong> ${isDue ? "⚠️ DUE / OVERDUE" : ""}
+            <div style="font-size:0.85rem; margin-top:0.2rem;">
+              Borrower: <strong>${b.name}</strong> (${b.phone})
+            </div>
+            <div style="font-size:0.82rem; margin-top:0.2rem;">
+              Return Due Date: <strong>${b.dueDate}</strong>
+            </div>
+          </div>
+          <button class="primary" onclick="markReturned('${book.id}')">Mark Returned</button>
+        </div>
+      `;
+    }).join("");
+  }
 
-      document.getElementById('stat-total').innerText = total;
-      document.getElementById('stat-lent').innerText = lent;
+  function markReturned(bookId) {
+    const book = state.books.find(b => b.id === bookId);
+    if (!book) return;
+    book.status = "available";
+    book.borrower = null;
+    saveState();
+  }
+
+  // Add / Edit / Delete Books
+  function openBookModal(bookId = null) {
+    document.getElementById("editBookId").value = bookId || "";
+    if (bookId) {
+      const book = state.books.find(b => b.id === bookId);
+      document.getElementById("bookModalTitle").textContent = "Edit Book";
+      document.getElementById("bookTitle").value = book.title;
+      document.getElementById("bookAuthor").value = book.author;
+      document.getElementById("bookCategory").value = book.category || "";
+      document.getElementById("bookCover").value = book.cover || "";
+      document.getElementById("bookCost").value = book.cost;
+      document.getElementById("bookTerm").value = book.term || "for 2 weeks";
+    } else {
+      document.getElementById("bookModalTitle").textContent = "Add New Book";
+      document.getElementById("bookTitle").value = "";
+      document.getElementById("bookAuthor").value = "";
+      document.getElementById("bookCategory").value = "";
+      document.getElementById("bookCover").value = "";
+      document.getElementById("bookCost").value = "0";
+      document.getElementById("bookTerm").value = "for 2 weeks";
+    }
+    document.getElementById("bookModal").classList.add("open");
+  }
+
+  function saveBook(e) {
+    e.preventDefault();
+    const id = document.getElementById("editBookId").value;
+    const bookData = {
+      title: document.getElementById("bookTitle").value.trim(),
+      author: document.getElementById("bookAuthor").value.trim(),
+      category: document.getElementById("bookCategory").value.trim(),
+      cover: document.getElementById("bookCover").value.trim(),
+      cost: parseFloat(document.getElementById("bookCost").value) || 0,
+      term: document.getElementById("bookTerm").value.trim() || "for 2 weeks"
+    };
+
+    if (id) {
+      const idx = state.books.findIndex(b => b.id === id);
+      state.books[idx] = { ...state.books[idx], ...bookData };
+    } else {
+      state.books.push({
+        id: "b_" + Date.now(),
+        ...bookData,
+        status: "available",
+        borrower: null
+      });
     }
 
-    // Security Helper: Escape HTML
-    function escapeHTML(str) {
-      if (!str) return '';
-      return str.replace(/[&<>'"]/g, 
-        tag => ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          "'": '&#39;',
-          '"': '&quot;'
-        }[tag] || tag)
-      );
-    }
-  </script>
+    saveState();
+    closeModal("bookModal");
+  }
+
+  function deleteBook(bookId) {
+    if (!confirm("Delete this book from your catalogue?")) return;
+    state.books = state.books.filter(b => b.id !== bookId);
+    saveState();
+  }
+
+  // Settings
+  function openSettingsModal() {
+    document.getElementById("settingPin").value = state.settings.pin;
+    document.getElementById("settingFormspree").value = state.settings.formspreeUrl || "";
+    document.getElementById("settingsModal").classList.add("open");
+  }
+
+  function saveSettings(e) {
+    e.preventDefault();
+    state.settings.pin = document.getElementById("settingPin").value.trim() || "1234";
+    state.settings.formspreeUrl = document.getElementById("settingFormspree").value.trim();
+    saveState();
+    closeModal("settingsModal");
+    alert("Settings saved!");
+  }
+
+  // Export / Import JSON
+  function exportData() {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "library-backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const imported = JSON.parse(evt.target.result);
+        if (imported.books && imported.settings) {
+          state = imported;
+          saveState();
+          alert("Library data imported successfully!");
+        } else {
+          alert("Invalid backup file format.");
+        }
+      } catch (err) {
+        alert("Could not read JSON file.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove("open");
+  }
+
+  // Initialize
+  updateNotifications();
+  renderBooks();
+</script>
 </body>
 </html>
