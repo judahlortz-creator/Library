@@ -162,7 +162,7 @@
     }
     .card:hover { transform: translateY(-2px); }
     .cover {
-      height: 170px;
+      height: 190px;
       background: linear-gradient(135deg, #334155, #1e293b);
       color: #f8fafc;
       display: flex;
@@ -304,7 +304,7 @@
     </div>
   </section>
 
-  <!-- SEARCH & FILTERS (VISIBLE TO EVERYONE) -->
+  <!-- SEARCH & FILTERS -->
   <div class="controls">
     <input type="text" id="searchInput" placeholder="Search by title, author, or category..." oninput="renderBooks()" />
     <select id="statusFilter" onchange="renderBooks()">
@@ -347,7 +347,7 @@
   </div>
 </div>
 
-<!-- OWNER APPROVE MODAL (SETS DUE DATE) -->
+<!-- OWNER APPROVE MODAL -->
 <div id="approveModal" class="modal-backdrop">
   <div class="modal">
     <h2>Approve Borrow Request</h2>
@@ -357,7 +357,6 @@
       <div class="form-group">
         <label>Return Due Date *</label>
         <input type="date" id="approveDueDate" required />
-        <div class="helper-text">You will see an alert on your dashboard when this date arrives or passes.</div>
       </div>
       <div class="modal-actions">
         <button type="button" onclick="closeModal('approveModal')">Cancel</button>
@@ -386,8 +385,13 @@
         <input type="text" id="bookCategory" placeholder="e.g., Theology, Fiction, History" />
       </div>
       <div class="form-group">
-        <label>Cover Image URL (Optional)</label>
-        <input type="url" id="bookCover" placeholder="https://..." />
+        <label>Book Cover Photo (Take Photo or Upload)</label>
+        <input type="file" id="bookCoverFile" accept="image/*" capture="environment" onchange="handleImageUpload(event)" />
+        <input type="hidden" id="bookCoverBase64" />
+        <div id="coverPreviewContainer" style="margin-top:0.5rem; display:none;">
+          <img id="coverPreviewImg" src="" alt="Cover preview" style="max-height:100px; border-radius:6px; border:1px solid var(--border);" />
+          <button type="button" style="margin-top:0.25rem; font-size:0.75rem; padding:0.2rem 0.5rem;" onclick="clearCoverPhoto()">Remove Photo</button>
+        </div>
       </div>
       <div class="form-group">
         <label>Borrow Cost ($ USD — enter 0 for Free)</label>
@@ -395,8 +399,7 @@
       </div>
       <div class="form-group">
         <label>Rental Term / Duration Label</label>
-        <input type="text" id="bookTerm" placeholder="e.g., for the term, for 2 weeks, per month" value="for 2 weeks" />
-        <div class="helper-text">Displays as e.g. "$5 to borrow for the term" when cost is above $0.</div>
+        <input type="text" id="bookTerm" placeholder="e.g., for the term, for 2 weeks" value="for 2 weeks" />
       </div>
       <div class="modal-actions">
         <button type="button" onclick="closeModal('bookModal')">Cancel</button>
@@ -406,7 +409,7 @@
   </div>
 </div>
 
-<!-- OWNER SETTINGS MODAL (PIN & FORMSPREE EMAIL) -->
+<!-- OWNER SETTINGS MODAL -->
 <div id="settingsModal" class="modal-backdrop">
   <div class="modal">
     <h2>Owner Settings</h2>
@@ -414,12 +417,10 @@
       <div class="form-group">
         <label>Owner PIN</label>
         <input type="password" id="settingPin" required />
-        <div class="helper-text">Default PIN is <strong>1234</strong>. Change it here.</div>
       </div>
       <div class="form-group">
         <label>Formspree Endpoint URL (For Email Notifications)</label>
         <input type="url" id="settingFormspree" placeholder="https://formspree.io/f/yourFormID" />
-        <div class="helper-text">Paste your free Formspree URL to receive an instant email whenever a visitor submits a borrow request.</div>
       </div>
       <div class="modal-actions">
         <button type="button" onclick="closeModal('settingsModal')">Cancel</button>
@@ -433,10 +434,7 @@
   const STORAGE_KEY = "personal_library_v2";
 
   const defaultData = {
-    settings: {
-      pin: "1234",
-      formspreeUrl: ""
-    },
+    settings: { pin: "1234", formspreeUrl: "" },
     books: [
       {
         id: "b1",
@@ -446,17 +444,6 @@
         cover: "",
         cost: 0,
         term: "for 2 weeks",
-        status: "available",
-        borrower: null
-      },
-      {
-        id: "b2",
-        title: "Introduction to Classical Rhetoric",
-        author: "Edward P.J. Corbett",
-        category: "Humanities",
-        cover: "",
-        cost: 5,
-        term: "for the term",
         status: "available",
         borrower: null
       }
@@ -523,7 +510,6 @@
     document.getElementById(tabId).classList.add("active");
   }
 
-  // Notifications & Due Date Check
   function getOverdueBooks() {
     const today = new Date().toISOString().split("T")[0];
     return state.books.filter(b => b.status === "borrowed" && b.borrower && b.borrower.dueDate <= today);
@@ -532,9 +518,7 @@
   function updateNotifications() {
     const pendingCount = state.requests.length;
     const overdueCount = getOverdueBooks().length;
-    const totalAlerts = pendingCount + overdueCount;
-
-    document.getElementById("alertCount").textContent = totalAlerts;
+    document.getElementById("alertCount").textContent = pendingCount + overdueCount;
     document.getElementById("reqTabCount").textContent = pendingCount;
     document.getElementById("loanTabCount").textContent = state.books.filter(b => b.status === "borrowed").length;
   }
@@ -573,7 +557,7 @@
       return `
         <div class="card">
           <div class="cover" style="${coverStyle}">
-            <div class="cover-overlay">${book.title}</div>
+            ${!book.cover ? `<div class="cover-overlay">${book.title}</div>` : ""}
           </div>
           <div class="card-body">
             <div class="card-title">${book.title}</div>
@@ -603,6 +587,41 @@
         </div>
       `;
     }).join("");
+  }
+
+  // Image Upload & Resizing Helper
+  function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 400;
+        const scaleSize = MAX_WIDTH / img.width;
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scaleSize;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
+        document.getElementById("bookCoverBase64").value = dataUrl;
+        document.getElementById("coverPreviewImg").src = dataUrl;
+        document.getElementById("coverPreviewContainer").style.display = "block";
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearCoverPhoto() {
+    document.getElementById("bookCoverBase64").value = "";
+    document.getElementById("bookCoverFile").value = "";
+    document.getElementById("coverPreviewImg").src = "";
+    document.getElementById("coverPreviewContainer").style.display = "none";
   }
 
   // Visitor Borrow Request Flow
@@ -641,7 +660,6 @@
     state.requests.push(reqObj);
     saveState();
 
-    // Send email notification via Formspree if configured
     if (state.settings.formspreeUrl) {
       try {
         await fetch(state.settings.formspreeUrl, {
@@ -697,9 +715,8 @@
     if (!req) return;
     document.getElementById("approveReqId").value = req.id;
     document.getElementById("approveSummary").textContent =
-      `Lending "${req.bookTitle}" to ${req.name} (${req.phone}). Visitor note: "${req.notes || "None"}"`;
+      `Lending "${req.bookTitle}" to ${req.name} (${req.phone}).`;
 
-    // Default due date 14 days from today
     const defaultDue = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
     document.getElementById("approveDueDate").value = defaultDue;
     document.getElementById("approveModal").classList.add("open");
@@ -716,12 +733,7 @@
     const book = state.books.find(b => b.id === req.bookId);
     if (book) {
       book.status = "borrowed";
-      book.borrower = {
-        name: req.name,
-        phone: req.phone,
-        notes: req.notes,
-        dueDate: dueDate
-      };
+      book.borrower = { name: req.name, phone: req.phone, notes: req.notes, dueDate: dueDate };
     }
 
     state.requests.splice(reqIndex, 1);
@@ -753,12 +765,8 @@
         <div class="list-item ${isDue ? "overdue-alert" : ""}">
           <div>
             <strong>${book.title}</strong> ${isDue ? "⚠️ DUE / OVERDUE" : ""}
-            <div style="font-size:0.85rem; margin-top:0.2rem;">
-              Borrower: <strong>${b.name}</strong> (${b.phone})
-            </div>
-            <div style="font-size:0.82rem; margin-top:0.2rem;">
-              Return Due Date: <strong>${b.dueDate}</strong>
-            </div>
+            <div style="font-size:0.85rem; margin-top:0.2rem;">Borrower: <strong>${b.name}</strong> (${b.phone})</div>
+            <div style="font-size:0.82rem; margin-top:0.2rem;">Return Due Date: <strong>${b.dueDate}</strong></div>
           </div>
           <button class="primary" onclick="markReturned('${book.id}')">Mark Returned</button>
         </div>
@@ -777,21 +785,26 @@
   // Add / Edit / Delete Books
   function openBookModal(bookId = null) {
     document.getElementById("editBookId").value = bookId || "";
+    clearCoverPhoto();
+
     if (bookId) {
       const book = state.books.find(b => b.id === bookId);
       document.getElementById("bookModalTitle").textContent = "Edit Book";
       document.getElementById("bookTitle").value = book.title;
       document.getElementById("bookAuthor").value = book.author;
       document.getElementById("bookCategory").value = book.category || "";
-      document.getElementById("bookCover").value = book.cover || "";
       document.getElementById("bookCost").value = book.cost;
       document.getElementById("bookTerm").value = book.term || "for 2 weeks";
+      if (book.cover && book.cover.startsWith("data:image")) {
+        document.getElementById("bookCoverBase64").value = book.cover;
+        document.getElementById("coverPreviewImg").src = book.cover;
+        document.getElementById("coverPreviewContainer").style.display = "block";
+      }
     } else {
       document.getElementById("bookModalTitle").textContent = "Add New Book";
       document.getElementById("bookTitle").value = "";
       document.getElementById("bookAuthor").value = "";
       document.getElementById("bookCategory").value = "";
-      document.getElementById("bookCover").value = "";
       document.getElementById("bookCost").value = "0";
       document.getElementById("bookTerm").value = "for 2 weeks";
     }
@@ -801,14 +814,19 @@
   function saveBook(e) {
     e.preventDefault();
     const id = document.getElementById("editBookId").value;
+    const coverData = document.getElementById("bookCoverBase64").value;
+
     const bookData = {
       title: document.getElementById("bookTitle").value.trim(),
       author: document.getElementById("bookAuthor").value.trim(),
       category: document.getElementById("bookCategory").value.trim(),
-      cover: document.getElementById("bookCover").value.trim(),
       cost: parseFloat(document.getElementById("bookCost").value) || 0,
       term: document.getElementById("bookTerm").value.trim() || "for 2 weeks"
     };
+
+    if (coverData) {
+      bookData.cover = coverData;
+    }
 
     if (id) {
       const idx = state.books.findIndex(b => b.id === id);
@@ -817,6 +835,7 @@
       state.books.push({
         id: "b_" + Date.now(),
         ...bookData,
+        cover: coverData || "",
         status: "available",
         borrower: null
       });
@@ -884,7 +903,6 @@
     document.getElementById(id).classList.remove("open");
   }
 
-  // Initialize
   updateNotifications();
   renderBooks();
 </script>
