@@ -417,6 +417,7 @@
       <div class="form-group">
         <label>Owner PIN</label>
         <input type="password" id="settingPin" required />
+        <div class="helper-text">Default PIN is <strong>1984</strong>. Change it here.</div>
       </div>
       <div class="form-group">
         <label>Formspree Endpoint URL (For Email Notifications)</label>
@@ -431,10 +432,10 @@
 </div>
 
 <script>
-  const STORAGE_KEY = "personal_library_v2";
+  const STORAGE_KEY = "personal_library_v3";
 
   const defaultData = {
-    settings: { pin: "1234", formspreeUrl: "" },
+    settings: { pin: "1984", formspreeUrl: "" },
     books: [
       {
         id: "b1",
@@ -486,7 +487,7 @@
       return;
     }
 
-    const entered = prompt("Enter Owner PIN (default is 1234):");
+    const entered = prompt("Enter Owner PIN (default is 1984):");
     if (entered === state.settings.pin) {
       isOwner = true;
       document.getElementById("ownerPanel").classList.add("active");
@@ -860,7 +861,7 @@
 
   function saveSettings(e) {
     e.preventDefault();
-    state.settings.pin = document.getElementById("settingPin").value.trim() || "1234";
+    state.settings.pin = document.getElementById("settingPin").value.trim() || "1984";
     state.settings.formspreeUrl = document.getElementById("settingFormspree").value.trim();
     saveState();
     closeModal("settingsModal");
