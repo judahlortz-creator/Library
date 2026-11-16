@@ -310,7 +310,6 @@
       margin-left: 0.35rem;
     }
 
-    /* Multi-photo gallery & Cropper */
     .gallery-preview {
       display: flex;
       gap: 0.5rem;
@@ -369,7 +368,6 @@
 </header>
 
 <main>
-  <!-- OWNER DASHBOARD -->
   <section id="ownerPanel" class="owner-panel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
       <h2>Owner Control Panel</h2>
@@ -398,7 +396,7 @@
 
   <!-- SEARCH & FILTERS -->
   <div class="controls">
-    <input type="text" id="searchInput" placeholder="Search by title, author, category, or description..." oninput="renderBooks()" />
+    <input type="text" id="searchInput" placeholder="Search by title, author, ISBN, category, or description..." oninput="renderBooks()" />
     <select id="statusFilter" onchange="renderBooks()">
       <option value="all">All Books</option>
       <option value="available">Available Now</option>
@@ -530,6 +528,10 @@
         <input type="text" id="bookAuthor" required />
       </div>
       <div class="form-group">
+        <label>ISBN</label>
+        <input type="text" id="bookIsbn" placeholder="e.g., 978-0593420232" />
+      </div>
+      <div class="form-group">
         <label>Category / Genre</label>
         <input type="text" id="bookCategory" placeholder="Theology, Fiction, History" />
       </div>
@@ -546,7 +548,7 @@
       <div class="form-group">
         <label>Book Photos (Add Multiple)</label>
         <input type="file" id="bookImageInput" accept="image/*" capture="environment" onchange="handleImageSelection(event)" />
-        <div class="helper-text">Add multiple photos. The primary/cover photo has a blue border. You can reorder, crop, or set any photo as the cover.</div>
+        <div class="helper-text">Add multiple photos. Primary photo has a blue border.</div>
         <div id="imageGalleryPreview" class="gallery-preview"></div>
       </div>
 
@@ -570,7 +572,7 @@
 <div id="cropModal" class="modal-backdrop" style="z-index: 60;">
   <div class="modal" style="max-width: 420px; text-align: center;">
     <h2>Crop Photo</h2>
-    <p class="sub">Drag or adjust framing. The preview shows how it fits your catalogue.</p>
+    <p class="sub">Drag or adjust framing.</p>
     <div style="margin: 1rem 0; background: #1e293b; padding: 1rem; border-radius: 8px;">
       <canvas id="cropCanvas" style="max-width: 100%; height: 260px; object-fit: contain; cursor: crosshair;"></canvas>
     </div>
@@ -606,7 +608,7 @@
   // ==========================================
   // TODO: PASTE YOUR FIREBASE CONFIG HERE
   // ==========================================
- const firebaseConfig = {
+  const firebaseConfig = {
   apiKey: "AIzaSyDzAhs7szhq2B8uZql1bpmyIb1G1_VdskM",
   authDomain: "judah-s-library.firebaseapp.com",
   projectId: "judah-s-library",
@@ -637,7 +639,7 @@
   };
 
   let isOwner = false;
-  let currentEditingImages = []; // Array of base64 strings for current book
+  let currentEditingImages = [];
   let tempCropImageObj = null;
   let cropCanvasCtx = null;
   let cropZoom = 1;
@@ -747,11 +749,17 @@
 
   function renderBooks() {
     const grid = document.getElementById("bookGrid");
-    const query = document.getElementById("searchInput").value.toLowerCase();
+    const query = document.getElementById("searchInput").value.toLowerCase().replace(/[-\s]/g, ""); // strip hyphens/spaces for flexible ISBN search
     const filter = document.getElementById("statusFilter").value;
 
     const filtered = state.books.filter(book => {
-      const matchesText = book.title.toLowerCase().includes(query) || book.author.toLowerCase().includes(query) || (book.category && book.category.toLowerCase().includes(query));
+      const titleMatch = book.title.toLowerCase().includes(query);
+      const authorMatch = book.author.toLowerCase().includes(query);
+      const categoryMatch = book.category && book.category.toLowerCase().includes(query);
+      const isbnClean = (book.isbn || "").toLowerCase().replace(/[-\s]/g, "");
+      const isbnMatch = isbnClean && isbnClean.includes(query);
+
+      const matchesText = titleMatch || authorMatch || categoryMatch || isbnMatch;
       if (!matchesText) return false;
       if (filter === "available") return book.status === "available";
       if (filter === "borrowed") return book.status === "borrowed";
@@ -770,7 +778,6 @@
       const costNum = Number(book.cost);
       const priceLabel = costNum > 0 ? `$${costNum} (${book.term})` : "Free to borrow";
       
-      // Support legacy single .cover string or new .images array
       let images = book.images || (book.cover ? [book.cover] : []);
       let coverImg = images.length > 0 ? images[0] : "";
       let coverStyle = coverImg ? `background-image: url('${coverImg}');` : "";
@@ -786,7 +793,10 @@
           <div class="card-body">
             <div class="card-title" onclick="openDetailsModal('${book.id}')">${book.title}</div>
             <div class="card-author">by ${book.author} ${book.category ? `• ${book.category}` : ""}</div>
-            <div class="card-meta">Catalogued: ${book.dateCatalogued || "N/A"}</div>
+            <div class="card-meta">
+              Catalogued: ${book.dateCatalogued || "N/A"} 
+              ${book.isbn ? `• ISBN: ${book.isbn}` : ""}
+            </div>
             <div class="rating-summary">
               ${avg ? `${formatStars(avg)} ${avg} (${revCount})` : `<span style="color:var(--text-muted); font-weight:400;">No reviews yet</span>`}
             </div>
@@ -806,7 +816,6 @@
     }).join("");
   }
 
-  // Details Modal & Multi-Photo Gallery
   function openDetailsModal(bookId) {
     const book = state.books.find(b => b.id === bookId);
     if (!book) return;
@@ -816,7 +825,7 @@
     const priceLabel = costNum > 0 ? `$${costNum} to borrow ${book.term}` : "Free to borrow";
 
     document.getElementById("detTitle").textContent = book.title;
-    document.getElementById("detMeta").textContent = `by ${book.author}${book.category ? ` • ${book.category}` : ""} • Catalogued ${book.dateCatalogued || "N/A"}`;
+    document.getElementById("detMeta").textContent = `by ${book.author}${book.category ? ` • ${book.category}` : ""} ${book.isbn ? `• ISBN: ${book.isbn}` : ""} • Catalogued ${book.dateCatalogued || "N/A"}`;
     document.getElementById("detBadges").innerHTML = `
       <span class="tag ${isBorrowed ? "borrowed" : "available"}">${isBorrowed ? "Borrowed" : "Available"}</span>
       <span class="tag ${costNum > 0 ? "rent" : "free"}">${priceLabel}</span>
@@ -901,7 +910,7 @@
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
-    e.target.value = ""; // Reset file input
+    e.target.value = "";
   }
 
   function openCropModal() {
@@ -911,7 +920,6 @@
     canvas.height = 380;
     drawCropPreview();
 
-    // Setup drag events
     canvas.onmousedown = startDrag;
     canvas.onmousemove = duringDrag;
     canvas.onmouseup = endDrag;
@@ -922,17 +930,8 @@
     document.getElementById("cropModal").classList.add("open");
   }
 
-  function startDrag(e) {
-    isDragging = true;
-    startX = e.clientX - cropOffsetX;
-    startY = e.clientY - cropOffsetY;
-  }
-  function duringDrag(e) {
-    if (!isDragging) return;
-    cropOffsetX = e.clientX - startX;
-    cropOffsetY = e.clientY - startY;
-    drawCropPreview();
-  }
+  function startDrag(e) { isDragging = true; startX = e.clientX - cropOffsetX; startY = e.clientY - cropOffsetY; }
+  function duringDrag(e) { if (!isDragging) return; cropOffsetX = e.clientX - startX; cropOffsetY = e.clientY - startY; drawCropPreview(); }
   function endDrag() { isDragging = false; }
 
   function drawCropPreview() {
@@ -955,7 +954,6 @@
 
   function confirmCrop() {
     const canvas = document.getElementById("cropCanvas");
-    // Generate final cropped base64
     const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
     currentEditingImages.push(dataUrl);
     renderImageGalleryPreview();
@@ -986,7 +984,6 @@
     renderImageGalleryPreview();
   }
 
-  // Add / Edit Book Modals
   function openBookModal(bookId = null) {
     document.getElementById("editBookId").value = bookId || "";
     currentEditingImages = [];
@@ -997,6 +994,7 @@
       document.getElementById("bookModalTitle").textContent = "Edit Book";
       document.getElementById("bookTitle").value = book.title;
       document.getElementById("bookAuthor").value = book.author;
+      document.getElementById("bookIsbn").value = book.isbn || "";
       document.getElementById("bookCategory").value = book.category || "";
       document.getElementById("bookDateCatalogued").value = book.dateCatalogued || todayStr;
       document.getElementById("bookDescription").value = book.description || "";
@@ -1007,6 +1005,7 @@
       document.getElementById("bookModalTitle").textContent = "Add New Book";
       document.getElementById("bookTitle").value = "";
       document.getElementById("bookAuthor").value = "";
+      document.getElementById("bookIsbn").value = "";
       document.getElementById("bookCategory").value = "";
       document.getElementById("bookDateCatalogued").value = todayStr;
       document.getElementById("bookDescription").value = "";
@@ -1023,6 +1022,7 @@
     const bookData = {
       title: document.getElementById("bookTitle").value.trim(),
       author: document.getElementById("bookAuthor").value.trim(),
+      isbn: document.getElementById("bookIsbn").value.trim(),
       category: document.getElementById("bookCategory").value.trim(),
       dateCatalogued: document.getElementById("bookDateCatalogued").value,
       description: document.getElementById("bookDescription").value.trim(),
@@ -1056,7 +1056,6 @@
     saveBooksToCloud();
   }
 
-  // Visitor Borrow Request
   function openRequestModal(bookId) {
     const book = state.books.find(b => b.id === bookId);
     if (!book) return;
