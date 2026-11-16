@@ -1,4 +1,4 @@
-F<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -50,7 +50,6 @@ F<!DOCTYPE html>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); transition: background 0.2s, color 0.2s; padding-bottom: 4rem; }
 
-    /* Header */
     header {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -110,10 +109,8 @@ F<!DOCTYPE html>
       border-radius: 999px;
     }
 
-    /* Main Container */
     main { max-width: 1150px; margin: 1.5rem auto; padding: 0 1.25rem; }
 
-    /* Search & Filter Bar */
     .controls {
       display: flex;
       flex-wrap: wrap;
@@ -130,7 +127,6 @@ F<!DOCTYPE html>
     }
     .controls input { flex: 1; min-width: 220px; }
 
-    /* Owner Tabs */
     .owner-panel {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -147,7 +143,6 @@ F<!DOCTYPE html>
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Book Grid */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
@@ -166,7 +161,7 @@ F<!DOCTYPE html>
     .card:hover { transform: translateY(-2px); }
     .cover {
       height: 190px;
-      background: #1e293b; /* Solid background color for empty space margins */
+      background: #1e293b;
       color: #f8fafc;
       display: flex;
       align-items: center;
@@ -176,7 +171,7 @@ F<!DOCTYPE html>
       font-weight: 700;
       font-size: 1.1rem;
       position: relative;
-      background-size: contain; /* <-- FIXES IT: Shows the full photo */
+      background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
       cursor: pointer;
@@ -187,6 +182,17 @@ F<!DOCTYPE html>
       border-radius: 6px;
       backdrop-filter: blur(2px);
     }
+    .photo-badge {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+
     .card-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.45rem; }
     .card-title { font-size: 1.05rem; font-weight: 700; line-height: 1.3; cursor: pointer; }
     .card-title:hover { color: var(--primary); }
@@ -220,7 +226,6 @@ F<!DOCTYPE html>
     .card-footer { padding: 0.85rem 1rem; border-top: 1px solid var(--border); display: flex; gap: 0.45rem; flex-wrap: wrap; }
     .card-footer button.main-btn { flex: 1; min-width: 120px; }
 
-    /* Tables / Lists in Owner Panel */
     .list-item {
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -239,7 +244,6 @@ F<!DOCTYPE html>
       color: var(--danger-text);
     }
 
-    /* Modals */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55);
       display: none; align-items: center; justify-content: center; padding: 1rem; z-index: 50;
@@ -250,7 +254,7 @@ F<!DOCTYPE html>
       border: 1px solid var(--border);
       border-radius: 12px;
       width: 100%;
-      max-width: 520px;
+      max-width: 560px;
       padding: 1.5rem;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
       max-height: 90vh;
@@ -267,7 +271,6 @@ F<!DOCTYPE html>
     .modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.25rem; }
     .helper-text { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
 
-    /* Details & Reviews Styling */
     .detail-desc {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -306,6 +309,47 @@ F<!DOCTYPE html>
       border-radius: 999px;
       margin-left: 0.35rem;
     }
+
+    /* Multi-photo gallery & Cropper */
+    .gallery-preview {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .thumb-wrap {
+      position: relative;
+      width: 70px;
+      height: 70px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid var(--border);
+    }
+    .thumb-wrap.cover-thumb { border-color: var(--primary); }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    .thumb-actions {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      opacity: 0; transition: opacity 0.15s; gap: 2px;
+    }
+    .thumb-wrap:hover .thumb-actions { opacity: 1; }
+    .thumb-actions button { font-size: 0.6rem; padding: 0.1rem 0.3rem; background: #fff; color: #000; border: none; border-radius: 3px; }
+
+    .main-gallery {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .main-gallery img {
+      height: 220px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      object-fit: contain;
+      background: #1e293b;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -325,11 +369,6 @@ F<!DOCTYPE html>
 </header>
 
 <main>
-  <!-- FIREBASE SETUP NOTICE (If not configured yet) -->
-  <div id="setupBanner" style="display:none; background:var(--warn-bg); color:var(--warn-text); padding:1rem; border-radius:8px; margin-bottom:1.5rem; font-size:0.9rem;">
-    <strong>Cloud Sync Setup Required:</strong> Please paste your Firebase configuration credentials into the code script section at the bottom of <code>index.html</code> to enable live cloud sync.
-  </div>
-
   <!-- OWNER DASHBOARD -->
   <section id="ownerPanel" class="owner-panel">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
@@ -349,12 +388,9 @@ F<!DOCTYPE html>
       </button>
     </div>
 
-    <!-- Requests Inbox -->
     <div id="requestsTab" class="tab-content active">
       <div id="requestsList"></div>
     </div>
-
-    <!-- Active Loans & Due Dates -->
     <div id="loansTab" class="tab-content">
       <div id="loansList"></div>
     </div>
@@ -372,11 +408,10 @@ F<!DOCTYPE html>
     </select>
   </div>
 
-  <!-- CATALOGUE GRID -->
   <div id="bookGrid" class="grid"></div>
 </main>
 
-<!-- BOOK DETAILS & VERIFIED BORROWER REVIEWS MODAL -->
+<!-- BOOK DETAILS & REVIEWS MODAL -->
 <div id="detailsModal" class="modal-backdrop">
   <div class="modal">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.5rem;">
@@ -387,12 +422,12 @@ F<!DOCTYPE html>
       <button onclick="closeModal('detailsModal')" style="padding:0.3rem 0.65rem;">✕</button>
     </div>
 
+    <div id="detGallery" class="main-gallery"></div>
     <div id="detBadges" class="badges" style="margin-bottom:0.85rem;"></div>
 
     <label style="display:block; font-size:0.8rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.35rem;">About This Book</label>
     <div id="detDescription" class="detail-desc"></div>
 
-    <!-- Reviews Section -->
     <div class="review-box">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
         <h3 style="font-size:1.05rem;">Borrower Reviews (<span id="detReviewCount">0</span>)</h3>
@@ -401,20 +436,16 @@ F<!DOCTYPE html>
 
       <div id="detReviewsList" style="margin-bottom:1rem;"></div>
 
-      <!-- Verified Borrower Review Form -->
       <div style="background:var(--surface-alt); padding:0.9rem; border-radius:8px;">
         <h4 style="font-size:0.92rem; margin-bottom:0.25rem;">Leave a Review</h4>
-        <p class="helper-text" style="margin-bottom:0.75rem;">
-          Only readers who have borrowed this book can submit a review. Enter the name or phone number you used when borrowing to verify.
-        </p>
         <form id="reviewForm" onsubmit="submitReview(event)">
           <input type="hidden" id="revBookId" />
           <div class="form-group">
-            <label>Your Name (as used on borrow request) *</label>
+            <label>Your Name *</label>
             <input type="text" id="revName" required placeholder="e.g., Alex Smith" />
           </div>
           <div class="form-group">
-            <label>Phone Number (for borrower verification) *</label>
+            <label>Phone Number *</label>
             <input type="tel" id="revPhone" required placeholder="e.g., (208) 555-0192" />
           </div>
           <div class="form-group">
@@ -429,7 +460,7 @@ F<!DOCTYPE html>
           </div>
           <div class="form-group">
             <label>Your Review *</label>
-            <textarea id="revComment" rows="3" required placeholder="Share your thoughts on this book..."></textarea>
+            <textarea id="revComment" rows="3" required placeholder="Share your thoughts..."></textarea>
           </div>
           <button type="submit" class="primary" style="width:100%;">Post Verified Review</button>
         </form>
@@ -438,7 +469,7 @@ F<!DOCTYPE html>
   </div>
 </div>
 
-<!-- VISITOR BORROW REQUEST MODAL -->
+<!-- BORROW REQUEST MODAL -->
 <div id="requestModal" class="modal-backdrop">
   <div class="modal">
     <h2>Request to Borrow</h2>
@@ -454,8 +485,8 @@ F<!DOCTYPE html>
         <input type="tel" id="visitorPhone" required placeholder="e.g., (208) 555-0192" />
       </div>
       <div class="form-group">
-        <label>How long would you like to borrow it? / Notes</label>
-        <textarea id="visitorNotes" rows="3" placeholder="e.g., Hoping to borrow for 2 weeks for a class project..."></textarea>
+        <label>Notes / Duration</label>
+        <textarea id="visitorNotes" rows="3" placeholder="Hoping to borrow for 2 weeks..."></textarea>
       </div>
       <div class="modal-actions">
         <button type="button" onclick="closeModal('requestModal')">Cancel</button>
@@ -465,7 +496,7 @@ F<!DOCTYPE html>
   </div>
 </div>
 
-<!-- OWNER APPROVE MODAL -->
+<!-- APPROVE MODAL -->
 <div id="approveModal" class="modal-backdrop">
   <div class="modal">
     <h2>Approve Borrow Request</h2>
@@ -484,7 +515,7 @@ F<!DOCTYPE html>
   </div>
 </div>
 
-<!-- OWNER ADD / EDIT BOOK MODAL -->
+<!-- ADD / EDIT BOOK MODAL -->
 <div id="bookModal" class="modal-backdrop">
   <div class="modal">
     <h2 id="bookModalTitle">Add Book</h2>
@@ -500,7 +531,7 @@ F<!DOCTYPE html>
       </div>
       <div class="form-group">
         <label>Category / Genre</label>
-        <input type="text" id="bookCategory" placeholder="e.g., Theology, Fiction, History" />
+        <input type="text" id="bookCategory" placeholder="Theology, Fiction, History" />
       </div>
       <div class="form-group">
         <label>Date Catalogued *</label>
@@ -508,24 +539,24 @@ F<!DOCTYPE html>
       </div>
       <div class="form-group">
         <label>Description / Summary</label>
-        <textarea id="bookDescription" rows="4" placeholder="Write a detailed summary, condition notes, or why you recommend this book..."></textarea>
+        <textarea id="bookDescription" rows="3" placeholder="Summary or condition notes..."></textarea>
       </div>
+
+      <!-- MULTI-PHOTO UPLOAD & CROP -->
       <div class="form-group">
-        <label>Book Cover Photo (Take Photo or Upload)</label>
-        <input type="file" id="bookCoverFile" accept="image/*" capture="environment" onchange="handleImageUpload(event)" />
-        <input type="hidden" id="bookCoverBase64" />
-        <div id="coverPreviewContainer" style="margin-top:0.5rem; display:none;">
-          <img id="coverPreviewImg" src="" alt="Cover preview" style="max-height:100px; border-radius:6px; border:1px solid var(--border);" />
-          <button type="button" style="margin-top:0.25rem; font-size:0.75rem; padding:0.2rem 0.5rem;" onclick="clearCoverPhoto()">Remove Photo</button>
-        </div>
+        <label>Book Photos (Add Multiple)</label>
+        <input type="file" id="bookImageInput" accept="image/*" capture="environment" onchange="handleImageSelection(event)" />
+        <div class="helper-text">Add multiple photos. The primary/cover photo has a blue border. You can reorder, crop, or set any photo as the cover.</div>
+        <div id="imageGalleryPreview" class="gallery-preview"></div>
       </div>
+
       <div class="form-group">
-        <label>Borrow Cost ($ USD — enter 0 for Free)</label>
+        <label>Borrow Cost ($ USD — 0 for Free)</label>
         <input type="number" id="bookCost" min="0" step="0.50" value="0" required />
       </div>
       <div class="form-group">
-        <label>Rental Term / Duration Label</label>
-        <input type="text" id="bookTerm" placeholder="e.g., for the term, for 2 weeks" value="for 2 weeks" />
+        <label>Rental Term</label>
+        <input type="text" id="bookTerm" value="for 2 weeks" />
       </div>
       <div class="modal-actions">
         <button type="button" onclick="closeModal('bookModal')">Cancel</button>
@@ -535,7 +566,22 @@ F<!DOCTYPE html>
   </div>
 </div>
 
-<!-- OWNER SETTINGS MODAL -->
+<!-- IMAGE CROPPER MODAL -->
+<div id="cropModal" class="modal-backdrop" style="z-index: 60;">
+  <div class="modal" style="max-width: 420px; text-align: center;">
+    <h2>Crop Photo</h2>
+    <p class="sub">Drag or adjust framing. The preview shows how it fits your catalogue.</p>
+    <div style="margin: 1rem 0; background: #1e293b; padding: 1rem; border-radius: 8px;">
+      <canvas id="cropCanvas" style="max-width: 100%; height: 260px; object-fit: contain; cursor: crosshair;"></canvas>
+    </div>
+    <div class="modal-actions" style="justify-content: center;">
+      <button type="button" onclick="closeModal('cropModal')">Cancel</button>
+      <button type="button" class="primary" onclick="confirmCrop()">Apply Crop & Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
 <div id="settingsModal" class="modal-backdrop">
   <div class="modal">
     <h2>Owner Settings</h2>
@@ -543,7 +589,6 @@ F<!DOCTYPE html>
       <div class="form-group">
         <label>Owner PIN</label>
         <input type="password" id="settingPin" required />
-        <div class="helper-text">Default PIN is <strong>1984</strong>. Change it here.</div>
       </div>
       <div class="form-group">
         <label>Formspree Endpoint URL (For Email Notifications)</label>
@@ -581,128 +626,74 @@ F<!DOCTYPE html>
       db = firebase.firestore();
       isFirebaseEnabled = true;
     } catch (e) {
-      console.error("Firebase initialization failed:", e);
+      console.error(e);
     }
-  } else {
-    document.getElementById("setupBanner").style.display = "block";
   }
 
-  // Local state fallback if Firebase isn't configured yet
   let state = {
     settings: { pin: "1984", formspreeUrl: "" },
-    books: [
-      {
-        id: "b1",
-        title: "Mere Christendom",
-        author: "Douglas Wilson",
-        category: "Theology",
-        dateCatalogued: "2026-11-15",
-        description: "A compelling exploration of Christian cultural engagement and the lordship of Christ over all spheres of life.",
-        cover: "",
-        cost: 0,
-        term: "for 2 weeks",
-        status: "available",
-        borrower: null,
-        borrowHistory: [],
-        reviews: []
-      }
-    ],
+    books: [],
     requests: []
   };
 
   let isOwner = false;
+  let currentEditingImages = []; // Array of base64 strings for current book
+  let tempCropImageObj = null;
+  let cropCanvasCtx = null;
+  let cropZoom = 1;
+  let cropOffsetX = 0;
+  let cropOffsetY = 0;
+  let isDragging = false;
+  let startX = 0, startY = 0;
 
-  // Initialize Firestore listeners or local data
   function initData() {
     if (isFirebaseEnabled) {
-      // Real-time sync for books
       db.collection("library").doc("books").onSnapshot(doc => {
         if (doc.exists && doc.data().items) {
           state.books = doc.data().items;
           renderBooks();
           if (isOwner) renderLoans();
         } else {
-          // Initialize remote db with default book if empty
           saveBooksToCloud();
         }
-      }, err => console.error(err));
-
-      // Real-time sync for requests
+      });
       db.collection("library").doc("requests").onSnapshot(doc => {
         if (doc.exists && doc.data().items) {
           state.requests = doc.data().items;
           updateNotifications();
           if (isOwner) renderRequests();
         }
-      }, err => console.error(err));
-
-      // Real-time sync for settings
+      });
       db.collection("library").doc("settings").onSnapshot(doc => {
-        if (doc.exists && doc.data()) {
-          state.settings = doc.data();
-        } else {
-          saveSettingsToCloud();
-        }
-      }, err => console.error(err));
+        if (doc.exists && doc.data()) state.settings = doc.data();
+      });
     } else {
-      // LocalStorage fallback
-      const local = localStorage.getItem("personal_library_cloud_v1");
-      if (local) {
-        try { state = JSON.parse(local); } catch(e){}
-      }
-      updateNotifications();
+      const local = localStorage.getItem("personal_library_cloud_v2");
+      if (local) { try { state = JSON.parse(local); } catch(e){} }
       renderBooks();
-    }
-  }
-
-  function persistState() {
-    if (isFirebaseEnabled) {
-      // Cloud sync handled by individual save functions
-    } else {
-      localStorage.setItem("personal_library_cloud_v1", JSON.stringify(state));
       updateNotifications();
-      renderBooks();
-      if (isOwner) {
-        renderRequests();
-        renderLoans();
-      }
     }
   }
 
   function saveBooksToCloud() {
-    if (isFirebaseEnabled) {
-      db.collection("library").doc("books").set({ items: state.books }).catch(console.error);
-    } else {
-      persistState();
-    }
+    if (isFirebaseEnabled) db.collection("library").doc("books").set({ items: state.books });
+    else { localStorage.setItem("personal_library_cloud_v2", JSON.stringify(state)); renderBooks(); if(isOwner){renderLoans();renderRequests();} }
   }
-
   function saveRequestsToCloud() {
-    if (isFirebaseEnabled) {
-      db.collection("library").doc("requests").set({ items: state.requests }).catch(console.error);
-    } else {
-      persistState();
-    }
+    if (isFirebaseEnabled) db.collection("library").doc("requests").set({ items: state.requests });
+    else saveBooksToCloud();
   }
-
   function saveSettingsToCloud() {
-    if (isFirebaseEnabled) {
-      db.collection("library").doc("settings").set(state.settings).catch(console.error);
-    } else {
-      persistState();
-    }
+    if (isFirebaseEnabled) db.collection("library").doc("settings").set(state.settings);
+    else saveBooksToCloud();
   }
 
-  // Theme Toggle
   function toggleDarkMode() {
     document.body.classList.toggle("dark");
     localStorage.setItem("library_dark", document.body.classList.contains("dark"));
   }
-  if (localStorage.getItem("library_dark") === "true") {
-    document.body.classList.add("dark");
-  }
+  if (localStorage.getItem("library_dark") === "true") document.body.classList.add("dark");
 
-  // Owner Login / Logout (NO automatic popups for regular visitors)
   function handleOwnerToggle() {
     if (isOwner) {
       isOwner = false;
@@ -714,7 +705,6 @@ F<!DOCTYPE html>
       renderBooks();
       return;
     }
-
     const entered = prompt("Enter Owner PIN:");
     if (entered === state.settings.pin) {
       isOwner = true;
@@ -727,9 +717,7 @@ F<!DOCTYPE html>
       renderRequests();
       renderLoans();
       renderBooks();
-    } else if (entered !== null) {
-      alert("Incorrect PIN.");
-    }
+    } else if (entered !== null) alert("Incorrect PIN.");
   }
 
   function openOwnerTab(tabId) {
@@ -739,14 +727,9 @@ F<!DOCTYPE html>
     document.getElementById(tabId).classList.add("active");
   }
 
-  function getOverdueBooks() {
-    const today = new Date().toISOString().split("T")[0];
-    return state.books.filter(b => b.status === "borrowed" && b.borrower && b.borrower.dueDate <= today);
-  }
-
   function updateNotifications() {
     const pendingCount = state.requests.length;
-    const overdueCount = getOverdueBooks().length;
+    const overdueCount = state.books.filter(b => b.status === "borrowed" && b.borrower && b.borrower.dueDate <= new Date().toISOString().split("T")[0]).length;
     document.getElementById("alertCount").textContent = pendingCount + overdueCount;
     document.getElementById("reqTabCount").textContent = pendingCount;
     document.getElementById("loanTabCount").textContent = state.books.filter(b => b.status === "borrowed").length;
@@ -756,26 +739,19 @@ F<!DOCTYPE html>
     const r = Math.round(Number(rating));
     return "★".repeat(r) + "☆".repeat(5 - r);
   }
-
   function getAverageRating(book) {
     if (!book.reviews || book.reviews.length === 0) return null;
     const sum = book.reviews.reduce((acc, r) => acc + Number(r.rating), 0);
     return (sum / book.reviews.length).toFixed(1);
   }
 
-  // Render Book Catalogue
   function renderBooks() {
     const grid = document.getElementById("bookGrid");
     const query = document.getElementById("searchInput").value.toLowerCase();
     const filter = document.getElementById("statusFilter").value;
 
     const filtered = state.books.filter(book => {
-      const matchesText =
-        book.title.toLowerCase().includes(query) ||
-        book.author.toLowerCase().includes(query) ||
-        (book.category && book.category.toLowerCase().includes(query)) ||
-        (book.description && book.description.toLowerCase().includes(query));
-
+      const matchesText = book.title.toLowerCase().includes(query) || book.author.toLowerCase().includes(query) || (book.category && book.category.toLowerCase().includes(query));
       if (!matchesText) return false;
       if (filter === "available") return book.status === "available";
       if (filter === "borrowed") return book.status === "borrowed";
@@ -792,53 +768,45 @@ F<!DOCTYPE html>
     grid.innerHTML = filtered.map(book => {
       const isBorrowed = book.status === "borrowed";
       const costNum = Number(book.cost);
-      const priceLabel = costNum > 0 ? `$${costNum} to borrow ${book.term}` : "Free to borrow";
-      const coverStyle = book.cover ? `background-image: url('${book.cover}');` : "";
+      const priceLabel = costNum > 0 ? `$${costNum} (${book.term})` : "Free to borrow";
+      
+      // Support legacy single .cover string or new .images array
+      let images = book.images || (book.cover ? [book.cover] : []);
+      let coverImg = images.length > 0 ? images[0] : "";
+      let coverStyle = coverImg ? `background-image: url('${coverImg}');` : "";
       const avg = getAverageRating(book);
       const revCount = book.reviews ? book.reviews.length : 0;
 
       return `
         <div class="card">
           <div class="cover" style="${coverStyle}" onclick="openDetailsModal('${book.id}')">
-            ${!book.cover ? `<div class="cover-overlay">${book.title}</div>` : ""}
+            ${!coverImg ? `<div class="cover-overlay">${book.title}</div>` : ""}
+            ${images.length > 1 ? `<span class="photo-badge">📷 ${images.length} photos</span>` : ""}
           </div>
           <div class="card-body">
             <div class="card-title" onclick="openDetailsModal('${book.id}')">${book.title}</div>
             <div class="card-author">by ${book.author} ${book.category ? `• ${book.category}` : ""}</div>
             <div class="card-meta">Catalogued: ${book.dateCatalogued || "N/A"}</div>
             <div class="rating-summary">
-              ${avg ? `${formatStars(avg)} ${avg} (${revCount} review${revCount === 1 ? "" : "s"})` : `<span style="color:var(--text-muted); font-weight:400;">No reviews yet</span>`}
+              ${avg ? `${formatStars(avg)} ${avg} (${revCount})` : `<span style="color:var(--text-muted); font-weight:400;">No reviews yet</span>`}
             </div>
             ${book.description ? `<div class="card-desc-snippet">${book.description}</div>` : ""}
             <div class="badges">
-              <span class="tag ${isBorrowed ? "borrowed" : "available"}">
-                ${isBorrowed ? "Borrowed" : "Available"}
-              </span>
-              <span class="tag ${costNum > 0 ? "rent" : "free"}">
-                ${priceLabel}
-              </span>
+              <span class="tag ${isBorrowed ? "borrowed" : "available"}">${isBorrowed ? "Borrowed" : "Available"}</span>
+              <span class="tag ${costNum > 0 ? "rent" : "free"}">${priceLabel}</span>
             </div>
           </div>
           <div class="card-footer">
-            ${
-              isBorrowed
-                ? `<button class="main-btn" disabled style="opacity:0.6; cursor:not-allowed;">Borrowed</button>`
-                : `<button class="primary main-btn" onclick="openRequestModal('${book.id}')">Request</button>`
-            }
-            <button onclick="openDetailsModal('${book.id}')" title="Read Description & Reviews">📖 Info & Reviews</button>
-            ${
-              isOwner
-                ? `<button onclick="openBookModal('${book.id}')" title="Edit">✏️</button>
-                   <button class="danger" onclick="deleteBook('${book.id}')" title="Delete">🗑️</button>`
-                : ""
-            }
+            ${isBorrowed ? `<button class="main-btn" disabled style="opacity:0.6; cursor:not-allowed;">Borrowed</button>` : `<button class="primary main-btn" onclick="openRequestModal('${book.id}')">Request</button>`}
+            <button onclick="openDetailsModal('${book.id}')">📖 Info</button>
+            ${isOwner ? `<button onclick="openBookModal('${book.id}')">✏️</button><button class="danger" onclick="deleteBook('${book.id}')">🗑️</button>` : ""}
           </div>
         </div>
       `;
     }).join("");
   }
 
-  // Book Details & Verified Borrower Reviews
+  // Details Modal & Multi-Photo Gallery
   function openDetailsModal(bookId) {
     const book = state.books.find(b => b.id === bookId);
     if (!book) return;
@@ -848,23 +816,24 @@ F<!DOCTYPE html>
     const priceLabel = costNum > 0 ? `$${costNum} to borrow ${book.term}` : "Free to borrow";
 
     document.getElementById("detTitle").textContent = book.title;
-    document.getElementById("detMeta").textContent =
-      `by ${book.author}${book.category ? ` • ${book.category}` : ""} • Catalogued ${book.dateCatalogued || "N/A"}`;
-
+    document.getElementById("detMeta").textContent = `by ${book.author}${book.category ? ` • ${book.category}` : ""} • Catalogued ${book.dateCatalogued || "N/A"}`;
     document.getElementById("detBadges").innerHTML = `
       <span class="tag ${isBorrowed ? "borrowed" : "available"}">${isBorrowed ? "Borrowed" : "Available"}</span>
       <span class="tag ${costNum > 0 ? "rent" : "free"}">${priceLabel}</span>
     `;
+    document.getElementById("detDescription").textContent = book.description || "No description provided.";
 
-    document.getElementById("detDescription").textContent =
-      book.description && book.description.trim()
-        ? book.description
-        : "No description provided for this book yet.";
+    let images = book.images || (book.cover ? [book.cover] : []);
+    const galleryEl = document.getElementById("detGallery");
+    if (images.length > 0) {
+      galleryEl.style.display = "flex";
+      galleryEl.innerHTML = images.map(img => `<img src="${img}" alt="Book photo" />`).join("");
+    } else {
+      galleryEl.style.display = "none";
+    }
 
     document.getElementById("revBookId").value = book.id;
-    document.getElementById("reviewForm").reset();
     renderReviewsList(book);
-
     document.getElementById("detailsModal").classList.add("open");
   }
 
@@ -873,123 +842,226 @@ F<!DOCTYPE html>
     const avg = getAverageRating(book);
     document.getElementById("detReviewCount").textContent = reviews.length;
     document.getElementById("detAvgRating").textContent = avg ? `${formatStars(avg)} (${avg}/5)` : "";
-
-    const container = document.getElementById("detReviewsList");
-    if (reviews.length === 0) {
-      container.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">No borrower reviews yet. Be the first after borrowing this book!</p>`;
-      return;
-    }
-
-    container.innerHTML = reviews.map(rev => `
-      <div class="review-card">
-        <div class="review-header">
-          <div>
-            <strong>${rev.name}</strong>
-            <span class="verified-pill">✓ Verified Borrower</span>
+    document.getElementById("detReviewsList").innerHTML = reviews.length === 0 ? `<p style="color:var(--text-muted); font-size:0.85rem;">No reviews yet.</p>` :
+      reviews.map(rev => `
+        <div class="review-card">
+          <div class="review-header">
+            <div><strong>${rev.name}</strong><span class="verified-pill">✓ Verified Borrower</span></div>
+            <span style="color:#d97706; font-weight:700;">${formatStars(rev.rating)}</span>
           </div>
-          <span style="color:#d97706; font-weight:700;">${formatStars(rev.rating)}</span>
+          <div style="font-size:0.88rem; margin-bottom:0.25rem;">${rev.comment}</div>
+          <div style="font-size:0.74rem; color:var(--text-muted);">${rev.date}</div>
         </div>
-        <div style="font-size:0.88rem; line-height:1.45; margin-bottom:0.25rem;">${rev.comment}</div>
-        <div style="font-size:0.74rem; color:var(--text-muted);">${rev.date}</div>
-      </div>
-    `).join("");
+      `).join("");
   }
 
-  function normalizePhone(phone) {
-    return (phone || "").replace(/\D/g, "");
-  }
-
+  function normalizePhone(phone) { return (phone || "").replace(/\D/g, ""); }
   function submitReview(e) {
     e.preventDefault();
     const bookId = document.getElementById("revBookId").value;
     const book = state.books.find(b => b.id === bookId);
     if (!book) return;
 
-    const nameInput = document.getElementById("revName").value.trim();
-    const phoneInput = document.getElementById("revPhone").value.trim();
+    const name = document.getElementById("revName").value.trim();
+    const phone = document.getElementById("revPhone").value.trim();
     const rating = Number(document.getElementById("revRating").value);
     const comment = document.getElementById("revComment").value.trim();
 
-    const cleanName = nameInput.toLowerCase();
-    const cleanPhone = normalizePhone(phoneInput);
+    const past = [...(book.borrowHistory || [])];
+    if (book.borrower) past.push(book.borrower);
 
-    const pastBorrowers = [...(book.borrowHistory || [])];
-    if (book.borrower) {
-      pastBorrowers.push(book.borrower);
-    }
-
-    const isVerified = pastBorrowers.some(record => {
-      const recName = (record.name || "").trim().toLowerCase();
-      const recPhone = normalizePhone(record.phone);
-      const nameMatches = recName && recName === cleanName;
-      const phoneMatches = cleanPhone.length >= 7 && recPhone && recPhone === cleanPhone;
-      return nameMatches || phoneMatches;
-    });
-
+    const isVerified = past.some(r => (r.name || "").toLowerCase() === name.toLowerCase() || normalizePhone(r.phone) === normalizePhone(phone));
     if (!isVerified) {
-      alert("Verification failed: We couldn't find an approved borrow record for this book matching that name or phone number. Only borrowers who have checked out this book can leave a review.");
+      alert("Verification failed: Name or phone number does not match an approved borrow record for this book.");
       return;
     }
 
     if (!Array.isArray(book.reviews)) book.reviews = [];
-    book.reviews.unshift({
-      id: "rev_" + Date.now(),
-      name: nameInput,
-      rating,
-      comment,
-      date: new Date().toLocaleDateString()
-    });
-
+    book.reviews.unshift({ id: "rev_" + Date.now(), name, rating, comment, date: new Date().toLocaleDateString() });
     saveBooksToCloud();
     document.getElementById("reviewForm").reset();
     renderReviewsList(book);
-    alert("Thank you! Your verified borrower review has been posted.");
+    alert("Review posted successfully!");
   }
 
-  // Image Upload & Resizing Helper
-  function handleImageUpload(e) {
+  // --- Image Cropping & Multi-Photo Workflow ---
+  function handleImageSelection(e) {
     const file = e.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = function(event) {
       const img = new Image();
       img.onload = function() {
-        const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 400;
-        const scaleSize = MAX_WIDTH / img.width;
-        canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scaleSize;
-
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
-        document.getElementById("bookCoverBase64").value = dataUrl;
-        document.getElementById("coverPreviewImg").src = dataUrl;
-        document.getElementById("coverPreviewContainer").style.display = "block";
+        tempCropImageObj = img;
+        cropZoom = 1;
+        cropOffsetX = 0;
+        cropOffsetY = 0;
+        openCropModal();
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
+    e.target.value = ""; // Reset file input
   }
 
-  function clearCoverPhoto() {
-    document.getElementById("bookCoverBase64").value = "";
-    document.getElementById("bookCoverFile").value = "";
-    document.getElementById("coverPreviewImg").src = "";
-    document.getElementById("coverPreviewContainer").style.display = "none";
+  function openCropModal() {
+    const canvas = document.getElementById("cropCanvas");
+    cropCanvasCtx = canvas.getContext("2d");
+    canvas.width = 300;
+    canvas.height = 380;
+    drawCropPreview();
+
+    // Setup drag events
+    canvas.onmousedown = startDrag;
+    canvas.onmousemove = duringDrag;
+    canvas.onmouseup = endDrag;
+    canvas.ontouchstart = (e) => { startDrag(e.touches[0]); };
+    canvas.ontouchmove = (e) => { duringDrag(e.touches[0]); };
+    canvas.ontouchend = endDrag;
+
+    document.getElementById("cropModal").classList.add("open");
   }
 
-  // Visitor Borrow Request Flow
+  function startDrag(e) {
+    isDragging = true;
+    startX = e.clientX - cropOffsetX;
+    startY = e.clientY - cropOffsetY;
+  }
+  function duringDrag(e) {
+    if (!isDragging) return;
+    cropOffsetX = e.clientX - startX;
+    cropOffsetY = e.clientY - startY;
+    drawCropPreview();
+  }
+  function endDrag() { isDragging = false; }
+
+  function drawCropPreview() {
+    const canvas = document.getElementById("cropCanvas");
+    cropCanvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!tempCropImageObj) return;
+
+    cropCanvasCtx.save();
+    cropCanvasCtx.translate(canvas.width / 2 + cropOffsetX, canvas.height / 2 + cropOffsetY);
+    const scale = Math.min(canvas.width / tempCropImageObj.width, canvas.height / tempCropImageObj.height) * cropZoom;
+    cropCanvasCtx.drawImage(
+      tempCropImageObj,
+      -tempCropImageObj.width * scale / 2,
+      -tempCropImageObj.height * scale / 2,
+      tempCropImageObj.width * scale,
+      tempCropImageObj.height * scale
+    );
+    cropCanvasCtx.restore();
+  }
+
+  function confirmCrop() {
+    const canvas = document.getElementById("cropCanvas");
+    // Generate final cropped base64
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    currentEditingImages.push(dataUrl);
+    renderImageGalleryPreview();
+    closeModal("cropModal");
+  }
+
+  function renderImageGalleryPreview() {
+    const container = document.getElementById("imageGalleryPreview");
+    container.innerHTML = currentEditingImages.map((img, idx) => `
+      <div class="thumb-wrap ${idx === 0 ? 'cover-thumb' : ''}">
+        <img src="${img}" alt="Thumbnail" />
+        <div class="thumb-actions">
+          ${idx !== 0 ? `<button type="button" onclick="setAsCover(${idx})">Make Cover</button>` : `<span style="font-size:0.6rem; color:#ffd700; font-weight:700;">COVER</span>`}
+          <button type="button" onclick="removeEditingImage(${idx})" style="background:#fee2e2; color:#991b1b;">Remove</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function setAsCover(idx) {
+    const img = currentEditingImages.splice(idx, 1)[0];
+    currentEditingImages.unshift(img);
+    renderImageGalleryPreview();
+  }
+
+  function removeEditingImage(idx) {
+    currentEditingImages.splice(idx, 1);
+    renderImageGalleryPreview();
+  }
+
+  // Add / Edit Book Modals
+  function openBookModal(bookId = null) {
+    document.getElementById("editBookId").value = bookId || "";
+    currentEditingImages = [];
+    const todayStr = new Date().toISOString().split("T")[0];
+
+    if (bookId) {
+      const book = state.books.find(b => b.id === bookId);
+      document.getElementById("bookModalTitle").textContent = "Edit Book";
+      document.getElementById("bookTitle").value = book.title;
+      document.getElementById("bookAuthor").value = book.author;
+      document.getElementById("bookCategory").value = book.category || "";
+      document.getElementById("bookDateCatalogued").value = book.dateCatalogued || todayStr;
+      document.getElementById("bookDescription").value = book.description || "";
+      document.getElementById("bookCost").value = book.cost;
+      document.getElementById("bookTerm").value = book.term || "for 2 weeks";
+      currentEditingImages = book.images ? [...book.images] : (book.cover ? [book.cover] : []);
+    } else {
+      document.getElementById("bookModalTitle").textContent = "Add New Book";
+      document.getElementById("bookTitle").value = "";
+      document.getElementById("bookAuthor").value = "";
+      document.getElementById("bookCategory").value = "";
+      document.getElementById("bookDateCatalogued").value = todayStr;
+      document.getElementById("bookDescription").value = "";
+      document.getElementById("bookCost").value = "0";
+      document.getElementById("bookTerm").value = "for 2 weeks";
+    }
+    renderImageGalleryPreview();
+    document.getElementById("bookModal").classList.add("open");
+  }
+
+  function saveBook(e) {
+    e.preventDefault();
+    const id = document.getElementById("editBookId").value;
+    const bookData = {
+      title: document.getElementById("bookTitle").value.trim(),
+      author: document.getElementById("bookAuthor").value.trim(),
+      category: document.getElementById("bookCategory").value.trim(),
+      dateCatalogued: document.getElementById("bookDateCatalogued").value,
+      description: document.getElementById("bookDescription").value.trim(),
+      cost: parseFloat(document.getElementById("bookCost").value) || 0,
+      term: document.getElementById("bookTerm").value.trim() || "for 2 weeks",
+      images: currentEditingImages,
+      cover: currentEditingImages.length > 0 ? currentEditingImages[0] : ""
+    };
+
+    if (id) {
+      const idx = state.books.findIndex(b => b.id === id);
+      state.books[idx] = { ...state.books[idx], ...bookData };
+    } else {
+      state.books.push({
+        id: "b_" + Date.now(),
+        ...bookData,
+        status: "available",
+        borrower: null,
+        borrowHistory: [],
+        reviews: []
+      });
+    }
+
+    saveBooksToCloud();
+    closeModal("bookModal");
+  }
+
+  function deleteBook(bookId) {
+    if (!confirm("Delete this book?")) return;
+    state.books = state.books.filter(b => b.id !== bookId);
+    saveBooksToCloud();
+  }
+
+  // Visitor Borrow Request
   function openRequestModal(bookId) {
     const book = state.books.find(b => b.id === bookId);
     if (!book) return;
-    const costNum = Number(book.cost);
-    const terms = costNum > 0 ? `Rental fee: $${costNum} (${book.term})` : "Free to borrow";
-
     document.getElementById("reqBookId").value = book.id;
-    document.getElementById("reqBookSummary").textContent = `"${book.title}" by ${book.author} — ${terms}`;
+    document.getElementById("reqBookSummary").textContent = `"${book.title}" by ${book.author}`;
     document.getElementById("borrowRequestForm").reset();
     document.getElementById("requestModal").classList.add("open");
   }
@@ -1002,80 +1074,41 @@ F<!DOCTYPE html>
     const phone = document.getElementById("visitorPhone").value.trim();
     const notes = document.getElementById("visitorNotes").value.trim();
 
-    const reqObj = {
+    state.requests.push({
       id: "req_" + Date.now(),
       bookId: book.id,
       bookTitle: book.title,
-      cost: book.cost,
-      term: book.term,
-      name,
-      phone,
-      notes,
+      name, phone, notes,
       submittedAt: new Date().toLocaleDateString()
-    };
-
-    state.requests.push(reqObj);
+    });
     saveRequestsToCloud();
-
-    if (state.settings.formspreeUrl) {
-      try {
-        await fetch(state.settings.formspreeUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify({
-            subject: `New Book Borrow Request: ${book.title}`,
-            book: book.title,
-            pricing: Number(book.cost) > 0 ? `$${book.cost} (${book.term})` : "Free",
-            visitor_name: name,
-            visitor_phone: phone,
-            duration_notes: notes || "None provided"
-          })
-        });
-      } catch (err) {
-        console.error("Email notification failed:", err);
-      }
-    }
-
     closeModal("requestModal");
-    alert(`Request sent for "${book.title}"! The library owner will review it shortly.`);
+    alert("Borrow request submitted successfully!");
   }
 
-  // Owner Requests Management
   function renderRequests() {
     const container = document.getElementById("requestsList");
-    if (state.requests.length === 0) {
-      container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No pending borrow requests.</p>`;
-      return;
-    }
-
-    container.innerHTML = state.requests.map(req => `
-      <div class="list-item">
-        <div>
-          <strong>${req.bookTitle}</strong>
-          <div style="font-size:0.85rem; margin-top:0.2rem;">
-            Requested by: <strong>${req.name}</strong> • 📞 ${req.phone}
+    container.innerHTML = state.requests.length === 0 ? `<p style="color:var(--text-muted);">No pending requests.</p>` :
+      state.requests.map(req => `
+        <div class="list-item">
+          <div>
+            <strong>${req.bookTitle}</strong>
+            <div style="font-size:0.85rem;">Requested by: <strong>${req.name}</strong> (${req.phone})</div>
           </div>
-          <div style="font-size:0.82rem; color:var(--text-muted); margin-top:0.2rem;">
-            Notes/Duration: "${req.notes || "No notes"}" (Submitted ${req.submittedAt})
+          <div style="display:flex; gap:0.5rem;">
+            <button class="success" onclick="openApproveModal('${req.id}')">Approve</button>
+            <button class="danger" onclick="denyRequest('${req.id}')">Deny</button>
           </div>
         </div>
-        <div style="display:flex; gap:0.5rem;">
-          <button class="success" onclick="openApproveModal('${req.id}')">Approve</button>
-          <button class="danger" onclick="denyRequest('${req.id}')">Deny</button>
-        </div>
-      </div>
-    `).join("");
+      `).join("");
   }
 
   function openApproveModal(reqId) {
     const req = state.requests.find(r => r.id === reqId);
     if (!req) return;
     document.getElementById("approveReqId").value = req.id;
-    document.getElementById("approveSummary").textContent =
-      `Lending "${req.bookTitle}" to ${req.name} (${req.phone}).`;
-
-    const defaultDue = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
-    document.getElementById("approveDueDate").value = defaultDue;
+    document.getElementById("approveSummary").textContent = `Lending "${req.bookTitle}" to ${req.name}`;
+    document.getElementById("approveDueDate").value = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
     document.getElementById("approveModal").classList.add("open");
   }
 
@@ -1089,19 +1122,12 @@ F<!DOCTYPE html>
     const req = state.requests[reqIndex];
     const book = state.books.find(b => b.id === req.bookId);
     if (book) {
-      const borrowerRecord = {
-        name: req.name,
-        phone: req.phone,
-        notes: req.notes,
-        dueDate: dueDate,
-        borrowedDate: new Date().toISOString().split("T")[0]
-      };
+      const record = { name: req.name, phone: req.phone, notes: req.notes, dueDate, borrowedDate: new Date().toISOString().split("T")[0] };
       book.status = "borrowed";
-      book.borrower = borrowerRecord;
+      book.borrower = record;
       if (!Array.isArray(book.borrowHistory)) book.borrowHistory = [];
-      book.borrowHistory.push(borrowerRecord);
+      book.borrowHistory.push(record);
     }
-
     state.requests.splice(reqIndex, 1);
     saveBooksToCloud();
     saveRequestsToCloud();
@@ -1109,36 +1135,23 @@ F<!DOCTYPE html>
   }
 
   function denyRequest(reqId) {
-    if (!confirm("Deny and remove this borrow request?")) return;
     state.requests = state.requests.filter(r => r.id !== reqId);
     saveRequestsToCloud();
   }
 
-  // Active Loans & Due Dates
   function renderLoans() {
     const container = document.getElementById("loansList");
-    const borrowedBooks = state.books.filter(b => b.status === "borrowed");
-    const today = new Date().toISOString().split("T")[0];
-
-    if (borrowedBooks.length === 0) {
-      container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No books are currently checked out.</p>`;
-      return;
-    }
-
-    container.innerHTML = borrowedBooks.map(book => {
-      const b = book.borrower;
-      const isDue = b.dueDate <= today;
-      return `
-        <div class="list-item ${isDue ? "overdue-alert" : ""}">
+    const borrowed = state.books.filter(b => b.status === "borrowed");
+    container.innerHTML = borrowed.length === 0 ? `<p style="color:var(--text-muted);">No active loans.</p>` :
+      borrowed.map(book => `
+        <div class="list-item">
           <div>
-            <strong>${book.title}</strong> ${isDue ? "⚠️ DUE / OVERDUE" : ""}
-            <div style="font-size:0.85rem; margin-top:0.2rem;">Borrower: <strong>${b.name}</strong> (${b.phone})</div>
-            <div style="font-size:0.82rem; margin-top:0.2rem;">Return Due Date: <strong>${b.dueDate}</strong></div>
+            <strong>${book.title}</strong>
+            <div style="font-size:0.85rem;">Borrower: <strong>${book.borrower.name}</strong> (Due: ${book.borrower.dueDate})</div>
           </div>
           <button class="primary" onclick="markReturned('${book.id}')">Mark Returned</button>
         </div>
-      `;
-    }).join("");
+      `).join("");
   }
 
   function markReturned(bookId) {
@@ -1149,91 +1162,11 @@ F<!DOCTYPE html>
     saveBooksToCloud();
   }
 
-  // Add / Edit / Delete Books
-  function openBookModal(bookId = null) {
-    document.getElementById("editBookId").value = bookId || "";
-    clearCoverPhoto();
-    const todayStr = new Date().toISOString().split("T")[0];
-
-    if (bookId) {
-      const book = state.books.find(b => b.id === bookId);
-      document.getElementById("bookModalTitle").textContent = "Edit Book";
-      document.getElementById("bookTitle").value = book.title;
-      document.getElementById("bookAuthor").value = book.author;
-      document.getElementById("bookCategory").value = book.category || "";
-      document.getElementById("bookDateCatalogued").value = book.dateCatalogued || todayStr;
-      document.getElementById("bookDescription").value = book.description || "";
-      document.getElementById("bookCost").value = book.cost;
-      document.getElementById("bookTerm").value = book.term || "for 2 weeks";
-      if (book.cover && book.cover.startsWith("data:image")) {
-        document.getElementById("bookCoverBase64").value = book.cover;
-        document.getElementById("coverPreviewImg").src = book.cover;
-        document.getElementById("coverPreviewContainer").style.display = "block";
-      }
-    } else {
-      document.getElementById("bookModalTitle").textContent = "Add New Book";
-      document.getElementById("bookTitle").value = "";
-      document.getElementById("bookAuthor").value = "";
-      document.getElementById("bookCategory").value = "";
-      document.getElementById("bookDateCatalogued").value = todayStr;
-      document.getElementById("bookDescription").value = "";
-      document.getElementById("bookCost").value = "0";
-      document.getElementById("bookTerm").value = "for 2 weeks";
-    }
-    document.getElementById("bookModal").classList.add("open");
-  }
-
-  function saveBook(e) {
-    e.preventDefault();
-    const id = document.getElementById("editBookId").value;
-    const coverData = document.getElementById("bookCoverBase64").value;
-
-    const bookData = {
-      title: document.getElementById("bookTitle").value.trim(),
-      author: document.getElementById("bookAuthor").value.trim(),
-      category: document.getElementById("bookCategory").value.trim(),
-      dateCatalogued: document.getElementById("bookDateCatalogued").value,
-      description: document.getElementById("bookDescription").value.trim(),
-      cost: parseFloat(document.getElementById("bookCost").value) || 0,
-      term: document.getElementById("bookTerm").value.trim() || "for 2 weeks"
-    };
-
-    if (coverData) {
-      bookData.cover = coverData;
-    }
-
-    if (id) {
-      const idx = state.books.findIndex(b => b.id === id);
-      state.books[idx] = { ...state.books[idx], ...bookData };
-    } else {
-      state.books.push({
-        id: "b_" + Date.now(),
-        ...bookData,
-        cover: coverData || "",
-        status: "available",
-        borrower: null,
-        borrowHistory: [],
-        reviews: []
-      });
-    }
-
-    saveBooksToCloud();
-    closeModal("bookModal");
-  }
-
-  function deleteBook(bookId) {
-    if (!confirm("Delete this book from your catalogue?")) return;
-    state.books = state.books.filter(b => b.id !== bookId);
-    saveBooksToCloud();
-  }
-
-  // Settings
   function openSettingsModal() {
     document.getElementById("settingPin").value = state.settings.pin;
     document.getElementById("settingFormspree").value = state.settings.formspreeUrl || "";
     document.getElementById("settingsModal").classList.add("open");
   }
-
   function saveSettings(e) {
     e.preventDefault();
     state.settings.pin = document.getElementById("settingPin").value.trim() || "1984";
@@ -1243,11 +1176,8 @@ F<!DOCTYPE html>
     alert("Settings saved!");
   }
 
-  function closeModal(id) {
-    document.getElementById(id).classList.remove("open");
-  }
+  function closeModal(id) { document.getElementById(id).classList.remove("open"); }
 
-  // Initialize App on load
   initData();
 </script>
 </body>
