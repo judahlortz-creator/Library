@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+F<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -166,7 +166,7 @@
     .card:hover { transform: translateY(-2px); }
     .cover {
       height: 190px;
-      background: linear-gradient(135deg, #334155, #1e293b);
+      background: #1e293b; /* Solid background color for empty space margins */
       color: #f8fafc;
       display: flex;
       align-items: center;
@@ -176,7 +176,8 @@
       font-weight: 700;
       font-size: 1.1rem;
       position: relative;
-      background-size: cover;
+      background-size: contain; /* <-- FIXES IT: Shows the full photo */
+      background-repeat: no-repeat;
       background-position: center;
       cursor: pointer;
     }
