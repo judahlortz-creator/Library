@@ -547,8 +547,8 @@
       <!-- MULTI-PHOTO UPLOAD & CROP -->
       <div class="form-group">
         <label>Book Photos (Add Multiple)</label>
-        <input type="file" id="bookImageInput" accept="image/*" capture="environment" onchange="handleImageSelection(event)" />
-        <div class="helper-text">Add multiple photos. Primary photo has a blue border.</div>
+        <input type="file" id="bookImageInput" accept="image/*" onchange="handleImageSelection(event)" />
+        <div class="helper-text">Choose from gallery or camera. Primary photo has a blue border.</div>
         <div id="imageGalleryPreview" class="gallery-preview"></div>
       </div>
 
@@ -562,7 +562,7 @@
       </div>
       <div class="modal-actions">
         <button type="button" onclick="closeModal('bookModal')">Cancel</button>
-        <button type="submit" class="primary">Save Book</button>
+        <button type="submit" class="primary" id="saveBookBtn">Save Book</button>
       </div>
     </form>
   </div>
@@ -572,7 +572,7 @@
 <div id="cropModal" class="modal-backdrop" style="z-index: 60;">
   <div class="modal" style="max-width: 420px; text-align: center;">
     <h2>Crop Photo</h2>
-    <p class="sub">Drag or adjust framing.</p>
+    <p class="sub">Drag to adjust framing.</p>
     <div style="margin: 1rem 0; background: #1e293b; padding: 1rem; border-radius: 8px;">
       <canvas id="cropCanvas" style="max-width: 100%; height: 260px; object-fit: contain; cursor: crosshair;"></canvas>
     </div>
@@ -608,7 +608,8 @@
   // ==========================================
   // TODO: PASTE YOUR FIREBASE CONFIG HERE
   // ==========================================
-  const firebaseConfig = {
+ 
+const firebaseConfig = {
   apiKey: "AIzaSyDzAhs7szhq2B8uZql1bpmyIb1G1_VdskM",
   authDomain: "judah-s-library.firebaseapp.com",
   projectId: "judah-s-library",
@@ -650,15 +651,29 @@
 
   function initData() {
     if (isFirebaseEnabled) {
-      db.collection("library").doc("books").onSnapshot(doc => {
-        if (doc.exists && doc.data().items) {
-          state.books = doc.data().items;
-          renderBooks();
-          if (isOwner) renderLoans();
+      // 1. Listen to individual book documents in 'books' collection
+      db.collection("books").onSnapshot(snapshot => {
+        const list = [];
+        snapshot.forEach(doc => list.push(doc.data()));
+        
+        // Auto-migrate legacy single-document books if 'books' collection is empty
+        if (list.length === 0) {
+          db.collection("library").doc("books").get().then(legacyDoc => {
+            if (legacyDoc.exists && legacyDoc.data().items && legacyDoc.data().items.length > 0) {
+              legacyDoc.data().items.forEach(item => {
+                db.collection("books").doc(item.id).set(item);
+              });
+            }
+          });
         } else {
-          saveBooksToCloud();
+          state.books = list;
+          renderBooks();
+          updateNotifications();
+          if (isOwner) renderLoans();
         }
-      });
+      }, err => console.error("Books listener error:", err));
+
+      // 2. Requests
       db.collection("library").doc("requests").onSnapshot(doc => {
         if (doc.exists && doc.data().items) {
           state.requests = doc.data().items;
@@ -666,6 +681,8 @@
           if (isOwner) renderRequests();
         }
       });
+
+      // 3. Settings
       db.collection("library").doc("settings").onSnapshot(doc => {
         if (doc.exists && doc.data()) state.settings = doc.data();
       });
@@ -677,17 +694,37 @@
     }
   }
 
-  function saveBooksToCloud() {
-    if (isFirebaseEnabled) db.collection("library").doc("books").set({ items: state.books });
-    else { localStorage.setItem("personal_library_cloud_v2", JSON.stringify(state)); renderBooks(); if(isOwner){renderLoans();renderRequests();} }
+  async function saveSingleBookToCloud(bookObj) {
+    if (isFirebaseEnabled) {
+      try {
+        await db.collection("books").doc(bookObj.id).set(bookObj);
+      } catch (err) {
+        alert("Failed to save book to cloud: " + err.message + "\nTry removing a photo or making photos smaller.");
+        throw err;
+      }
+    } else {
+      localStorage.setItem("personal_library_cloud_v2", JSON.stringify(state));
+      renderBooks();
+      if (isOwner) { renderLoans(); renderRequests(); }
+    }
   }
+
+  async function deleteSingleBookFromCloud(bookId) {
+    if (isFirebaseEnabled) {
+      await db.collection("books").doc(bookId).delete();
+    } else {
+      localStorage.setItem("personal_library_cloud_v2", JSON.stringify(state));
+      renderBooks();
+    }
+  }
+
   function saveRequestsToCloud() {
     if (isFirebaseEnabled) db.collection("library").doc("requests").set({ items: state.requests });
-    else saveBooksToCloud();
+    else localStorage.setItem("personal_library_cloud_v2", JSON.stringify(state));
   }
   function saveSettingsToCloud() {
     if (isFirebaseEnabled) db.collection("library").doc("settings").set(state.settings);
-    else saveBooksToCloud();
+    else localStorage.setItem("personal_library_cloud_v2", JSON.stringify(state));
   }
 
   function toggleDarkMode() {
@@ -749,17 +786,19 @@
 
   function renderBooks() {
     const grid = document.getElementById("bookGrid");
-    const query = document.getElementById("searchInput").value.toLowerCase().replace(/[-\s]/g, ""); // strip hyphens/spaces for flexible ISBN search
+    const rawQuery = document.getElementById("searchInput").value.toLowerCase();
+    const cleanQuery = rawQuery.replace(/[-\s]/g, "");
     const filter = document.getElementById("statusFilter").value;
 
     const filtered = state.books.filter(book => {
-      const titleMatch = book.title.toLowerCase().includes(query);
-      const authorMatch = book.author.toLowerCase().includes(query);
-      const categoryMatch = book.category && book.category.toLowerCase().includes(query);
+      const titleMatch = book.title.toLowerCase().includes(rawQuery);
+      const authorMatch = book.author.toLowerCase().includes(rawQuery);
+      const categoryMatch = book.category && book.category.toLowerCase().includes(rawQuery);
+      const descMatch = book.description && book.description.toLowerCase().includes(rawQuery);
       const isbnClean = (book.isbn || "").toLowerCase().replace(/[-\s]/g, "");
-      const isbnMatch = isbnClean && isbnClean.includes(query);
+      const isbnMatch = cleanQuery && isbnClean && isbnClean.includes(cleanQuery);
 
-      const matchesText = titleMatch || authorMatch || categoryMatch || isbnMatch;
+      const matchesText = titleMatch || authorMatch || categoryMatch || descMatch || isbnMatch;
       if (!matchesText) return false;
       if (filter === "available") return book.status === "available";
       if (filter === "borrowed") return book.status === "borrowed";
@@ -865,7 +904,7 @@
   }
 
   function normalizePhone(phone) { return (phone || "").replace(/\D/g, ""); }
-  function submitReview(e) {
+  async function submitReview(e) {
     e.preventDefault();
     const bookId = document.getElementById("revBookId").value;
     const book = state.books.find(b => b.id === bookId);
@@ -887,7 +926,7 @@
 
     if (!Array.isArray(book.reviews)) book.reviews = [];
     book.reviews.unshift({ id: "rev_" + Date.now(), name, rating, comment, date: new Date().toLocaleDateString() });
-    saveBooksToCloud();
+    await saveSingleBookToCloud(book);
     document.getElementById("reviewForm").reset();
     renderReviewsList(book);
     alert("Review posted successfully!");
@@ -916,8 +955,9 @@
   function openCropModal() {
     const canvas = document.getElementById("cropCanvas");
     cropCanvasCtx = canvas.getContext("2d");
-    canvas.width = 300;
-    canvas.height = 380;
+    // Compact resolution keeps each photo ~25KB so you can store 20+ photos per book easily
+    canvas.width = 260;
+    canvas.height = 330;
     drawCropPreview();
 
     canvas.onmousedown = startDrag;
@@ -954,7 +994,7 @@
 
   function confirmCrop() {
     const canvas = document.getElementById("cropCanvas");
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.75);
     currentEditingImages.push(dataUrl);
     renderImageGalleryPreview();
     closeModal("cropModal");
@@ -1016,44 +1056,56 @@
     document.getElementById("bookModal").classList.add("open");
   }
 
-  function saveBook(e) {
+  async function saveBook(e) {
     e.preventDefault();
-    const id = document.getElementById("editBookId").value;
-    const bookData = {
-      title: document.getElementById("bookTitle").value.trim(),
-      author: document.getElementById("bookAuthor").value.trim(),
-      isbn: document.getElementById("bookIsbn").value.trim(),
-      category: document.getElementById("bookCategory").value.trim(),
-      dateCatalogued: document.getElementById("bookDateCatalogued").value,
-      description: document.getElementById("bookDescription").value.trim(),
-      cost: parseFloat(document.getElementById("bookCost").value) || 0,
-      term: document.getElementById("bookTerm").value.trim() || "for 2 weeks",
-      images: currentEditingImages,
-      cover: currentEditingImages.length > 0 ? currentEditingImages[0] : ""
-    };
+    const saveBtn = document.getElementById("saveBookBtn");
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
 
-    if (id) {
-      const idx = state.books.findIndex(b => b.id === id);
-      state.books[idx] = { ...state.books[idx], ...bookData };
-    } else {
-      state.books.push({
-        id: "b_" + Date.now(),
-        ...bookData,
-        status: "available",
-        borrower: null,
-        borrowHistory: [],
-        reviews: []
-      });
+    try {
+      const id = document.getElementById("editBookId").value;
+      const bookData = {
+        title: document.getElementById("bookTitle").value.trim(),
+        author: document.getElementById("bookAuthor").value.trim(),
+        isbn: document.getElementById("bookIsbn").value.trim(),
+        category: document.getElementById("bookCategory").value.trim(),
+        dateCatalogued: document.getElementById("bookDateCatalogued").value,
+        description: document.getElementById("bookDescription").value.trim(),
+        cost: parseFloat(document.getElementById("bookCost").value) || 0,
+        term: document.getElementById("bookTerm").value.trim() || "for 2 weeks",
+        images: currentEditingImages,
+        cover: currentEditingImages.length > 0 ? currentEditingImages[0] : ""
+      };
+
+      let targetBook;
+      if (id) {
+        const idx = state.books.findIndex(b => b.id === id);
+        targetBook = { ...state.books[idx], ...bookData };
+        state.books[idx] = targetBook;
+      } else {
+        targetBook = {
+          id: "b_" + Date.now(),
+          ...bookData,
+          status: "available",
+          borrower: null,
+          borrowHistory: [],
+          reviews: []
+        };
+        state.books.push(targetBook);
+      }
+
+      await saveSingleBookToCloud(targetBook);
+      closeModal("bookModal");
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Book";
     }
-
-    saveBooksToCloud();
-    closeModal("bookModal");
   }
 
-  function deleteBook(bookId) {
+  async function deleteBook(bookId) {
     if (!confirm("Delete this book?")) return;
     state.books = state.books.filter(b => b.id !== bookId);
-    saveBooksToCloud();
+    await deleteSingleBookFromCloud(bookId);
   }
 
   function openRequestModal(bookId) {
@@ -1111,7 +1163,7 @@
     document.getElementById("approveModal").classList.add("open");
   }
 
-  function confirmApproval(e) {
+  async function confirmApproval(e) {
     e.preventDefault();
     const reqId = document.getElementById("approveReqId").value;
     const dueDate = document.getElementById("approveDueDate").value;
@@ -1126,9 +1178,9 @@
       book.borrower = record;
       if (!Array.isArray(book.borrowHistory)) book.borrowHistory = [];
       book.borrowHistory.push(record);
+      await saveSingleBookToCloud(book);
     }
     state.requests.splice(reqIndex, 1);
-    saveBooksToCloud();
     saveRequestsToCloud();
     closeModal("approveModal");
   }
@@ -1153,12 +1205,12 @@
       `).join("");
   }
 
-  function markReturned(bookId) {
+  async function markReturned(bookId) {
     const book = state.books.find(b => b.id === bookId);
     if (!book) return;
     book.status = "available";
     book.borrower = null;
-    saveBooksToCloud();
+    await saveSingleBookToCloud(book);
   }
 
   function openSettingsModal() {
